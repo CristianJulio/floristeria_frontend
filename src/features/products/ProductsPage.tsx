@@ -98,7 +98,7 @@ export function ProductsPage() {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold">Productos</h1>
+        <h1 className="text-xl font-semibold">Productos</h1>
         {can('products.create') && <Button onClick={() => setDialogProduct('new')}>Nuevo producto</Button>}
       </div>
 

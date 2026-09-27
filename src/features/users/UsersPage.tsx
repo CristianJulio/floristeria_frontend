@@ -76,7 +76,7 @@ export function UsersPage() {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold">Usuarios</h1>
+        <h1 className="text-xl font-semibold">Usuarios</h1>
         {can('users.create') && (
           <Button disabled={!rolesReady} onClick={() => setDialog({ kind: 'new' })}>
             Nuevo usuario

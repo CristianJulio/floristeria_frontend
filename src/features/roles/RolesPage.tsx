@@ -9,9 +9,9 @@ export function RolesPage() {
   const { data: roles, isPending, isError, refetch } = useQuery({ queryKey: ['roles'], queryFn: fetchRoles })
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold">Roles</h1>
+        <h1 className="text-xl font-semibold">Roles</h1>
         {can('roles.create') && (
           <Button nativeButton={false} render={<Link to="/roles/nuevo" />}>
             Nuevo rol
