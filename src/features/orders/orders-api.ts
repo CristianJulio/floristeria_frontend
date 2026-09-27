@@ -99,6 +99,29 @@ export async function changeOrderStatus(id: string, status: OrderStatus, cancell
   return body.data
 }
 
+export type RecordPaymentInput = {
+  type: PaymentType
+  amount: number
+  method: PaymentMethod
+  sourceAccount?: string
+}
+
+export async function recordPayment(orderId: string, input: RecordPaymentInput) {
+  const body = await apiFetch<{ data: Order }>(`/api/orders/${orderId}/payments`, {
+    method: 'POST',
+    body: input,
+  })
+  return body.data
+}
+
+export async function voidPayment(orderId: string, paymentId: string, reason: string) {
+  const body = await apiFetch<{ data: Order }>(`/api/orders/${orderId}/payments/${paymentId}/void`, {
+    method: 'PATCH',
+    body: { reason },
+  })
+  return body.data
+}
+
 export async function fetchOrders(filters: OrdersFilters) {
   return apiFetch<{ data: Order[]; pagination: Pagination }>('/api/orders', {
     query: {
