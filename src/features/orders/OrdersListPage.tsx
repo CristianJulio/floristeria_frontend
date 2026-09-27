@@ -1,11 +1,13 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
+import { Flower2Icon } from 'lucide-react'
 import { useAuth } from '@/features/auth/auth-context'
 import { Button } from '@/components/ui/button'
 import { PaginationControls } from '@/components/PaginationControls'
 import { todayInColombia } from '@/lib/dates'
 import { OrdersFilterBar } from './OrdersFilterBar'
 import { OrdersList } from './OrdersList'
+import { formatDeliveryDay } from './order-format'
 import { fetchOrders } from './orders-api'
 import { useOrderFilters } from './useOrderFilters'
 
@@ -23,10 +25,22 @@ export function OrdersListPage() {
     placeholderData: keepPreviousData,
   })
 
+  const dates =
+    filters.deliveryFrom === filters.deliveryTo
+      ? formatDeliveryDay(filters.deliveryFrom)
+      : `${formatDeliveryDay(filters.deliveryFrom)} – ${formatDeliveryDay(filters.deliveryTo)}`
+  const total = data?.pagination.total
+
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{isToday ? 'Entregas de hoy' : 'Pedidos'}</h1>
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-xl font-semibold">{isToday ? 'Entregas de hoy' : 'Pedidos'}</h1>
+          <p className="text-sm text-muted-foreground first-letter:uppercase">
+            {dates}
+            {total !== undefined && ` · ${total} ${total === 1 ? 'pedido' : 'pedidos'}`}
+          </p>
+        </div>
         {can('orders.create') && (
           <Button nativeButton={false} render={<Link to="/pedidos/nuevo" />}>
             Nuevo pedido
@@ -46,7 +60,11 @@ export function OrdersListPage() {
           </Button>
         </div>
       ) : data.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No hay pedidos con estos filtros.</p>
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed bg-card px-6 py-12 text-center">
+          <Flower2Icon className="size-8 text-primary/60" aria-hidden />
+          <p className="font-medium">No hay pedidos con estos filtros.</p>
+          <p className="text-sm text-muted-foreground">Prueba con otras fechas u otros estados.</p>
+        </div>
       ) : (
         <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
           <OrdersList orders={data.data} />

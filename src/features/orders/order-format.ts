@@ -37,6 +37,15 @@ export const STATUS_CLASSES: Record<OrderStatus, string> = {
   CANCELLED: 'bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100',
 }
 
+// Small coloured dot for each status, used in the status filter chips
+export const STATUS_DOT_CLASSES: Record<OrderStatus, string> = {
+  PENDING: 'bg-amber-500',
+  PREPARING: 'bg-petal-foreground',
+  OUT_FOR_DELIVERY: 'bg-blue-500',
+  DELIVERED: 'bg-green-600',
+  CANCELLED: 'bg-red-500',
+}
+
 import { formatMoney } from '@/lib/money'
 
 // Re-exported so the orders feature keeps importing it from here

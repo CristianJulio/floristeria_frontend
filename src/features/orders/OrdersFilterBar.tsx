@@ -1,10 +1,38 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { cn } from 'cn'
+import { ChevronDownIcon, SearchIcon, SlidersHorizontalIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { addDays, todayInColombia, weekRange } from '@/lib/dates'
-import { STATUS_LABELS } from './order-format'
+import { STATUS_DOT_CLASSES, STATUS_LABELS } from './order-format'
 import { ORDER_STATUSES, type OrdersFilters } from './orders-api'
+import { DEFAULT_STATUSES } from './useOrderFilters'
+
+// On/off filter shaped like a pill; the optional dot shows the status colour
+function FilterChip({ active, dot, onClick, children }: {
+  active: boolean
+  dot?: string
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
+        active
+          ? 'border-primary/30 bg-secondary font-medium text-secondary-foreground'
+          : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground',
+      )}
+    >
+      {dot && <span className={cn('size-2 rounded-full', dot, !active && 'opacity-50')} aria-hidden />}
+      {children}
+    </button>
+  )
+}
 
 type Props = {
   filters: OrdersFilters
@@ -30,6 +58,14 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
     return () => clearTimeout(timer)
   }, [search, filters.search, onChange])
 
+  // How many of the tucked-away filters differ from the defaults, shown on the "Filtros" button
+  const customDates = !quickRanges.some((r) => r.from === filters.deliveryFrom && r.to === filters.deliveryTo)
+  const customStatuses =
+    filters.statuses.length !== DEFAULT_STATUSES.length ||
+    !DEFAULT_STATUSES.every((status) => filters.statuses.includes(status))
+  const activeCount = [customDates, customStatuses, filters.pendingPayment, filters.pendingRefund].filter(Boolean).length
+  const [open, setOpen] = useState(false)
+
   const toggleStatus = (status: (typeof ORDER_STATUSES)[number]) => {
     const statuses = filters.statuses.includes(status)
       ? filters.statuses.filter((s) => s !== status)
@@ -39,95 +75,148 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-end gap-2">
-        {quickRanges.map((range) => {
-          const active = filters.deliveryFrom === range.from && filters.deliveryTo === range.to
-          return (
-            <Button
-              key={range.label}
-              size="sm"
-              variant={active ? 'default' : 'outline'}
-              aria-pressed={active}
-              onClick={() => onChange({ deliveryFrom: range.from, deliveryTo: range.to })}
-            >
-              {range.label}
-            </Button>
-          )
-        })}
-        <div className="flex items-end gap-2">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="delivery-from" className="text-xs">
-              Desde
-            </Label>
+      {/* The everyday controls: the day and the search. Everything else is under "Filtros" */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div role="group" aria-label="Fecha de entrega" className="flex w-full rounded-lg border bg-card p-0.5 sm:inline-flex sm:w-auto">
+          {quickRanges.map((range) => {
+            const active = filters.deliveryFrom === range.from && filters.deliveryTo === range.to
+            return (
+              <button
+                key={range.label}
+                type="button"
+                aria-pressed={active}
+                onClick={() => onChange({ deliveryFrom: range.from, deliveryTo: range.to })}
+                className={cn(
+                  'flex-1 rounded-md px-3 py-1 text-sm font-medium transition-colors sm:flex-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
+                  active ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {range.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+          <div className="relative min-w-0 flex-1 sm:w-72">
+            <SearchIcon
+              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
             <Input
-              id="delivery-from"
-              type="date"
-              className="h-7 w-auto"
-              value={filters.deliveryFrom}
-              max={filters.deliveryTo}
-              onChange={(event) => event.target.value && onChange({ deliveryFrom: event.target.value })}
+              type="search"
+              placeholder="Nombre o teléfono"
+              aria-label="Buscar pedidos"
+              className="h-8 bg-card pl-8"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="delivery-to" className="text-xs">
-              Hasta
-            </Label>
-            <Input
-              id="delivery-to"
-              type="date"
-              className="h-7 w-auto"
-              value={filters.deliveryTo}
-              min={filters.deliveryFrom}
-              onChange={(event) => event.target.value && onChange({ deliveryTo: event.target.value })}
-            />
-          </div>
+          <Button
+            variant={activeCount > 0 ? 'secondary' : 'outline'}
+            className={cn('h-8', activeCount === 0 && 'bg-card')}
+            aria-expanded={open}
+            aria-controls="order-filters"
+            onClick={() => setOpen((value) => !value)}
+          >
+            <SlidersHorizontalIcon aria-hidden />
+            Filtros
+            {activeCount > 0 && <span className="tabular-nums">· {activeCount}</span>}
+            <ChevronDownIcon className={cn('transition-transform', open && 'rotate-180')} aria-hidden />
+          </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {ORDER_STATUSES.map((status) => {
-          const active = filters.statuses.includes(status)
-          return (
-            <Button
-              key={status}
-              size="sm"
-              variant={active ? 'secondary' : 'ghost'}
-              aria-pressed={active}
-              className={active ? '' : 'text-muted-foreground'}
-              onClick={() => toggleStatus(status)}
-            >
-              {STATUS_LABELS[status]}
-            </Button>
-          )
-        })}
-      </div>
+      {open && (
+        <div id="order-filters" className="flex flex-col gap-4 rounded-xl border bg-card p-4">
+          {/* Dates and payments side by side when there is room; statuses below */}
+          <div className="flex flex-wrap gap-x-10 gap-y-4">
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                Fechas de entrega
+              </legend>
+              <div className="flex flex-wrap items-center gap-1.5 text-sm">
+                <Label htmlFor="delivery-from" className="sr-only">
+                  Desde
+                </Label>
+                <Input
+                  id="delivery-from"
+                  type="date"
+                  className="h-8 w-auto"
+                  value={filters.deliveryFrom}
+                  max={filters.deliveryTo}
+                  onChange={(event) => event.target.value && onChange({ deliveryFrom: event.target.value })}
+                />
+                <span className="text-muted-foreground">a</span>
+                <Label htmlFor="delivery-to" className="sr-only">
+                  Hasta
+                </Label>
+                <Input
+                  id="delivery-to"
+                  type="date"
+                  className="h-8 w-auto"
+                  value={filters.deliveryTo}
+                  min={filters.deliveryFrom}
+                  onChange={(event) => event.target.value && onChange({ deliveryTo: event.target.value })}
+                />
+              </div>
+            </fieldset>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          type="search"
-          placeholder="Buscar por destinatario, remitente o teléfono"
-          aria-label="Buscar pedidos"
-          className="max-w-sm"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <Button
-          size="sm"
-          variant={filters.pendingPayment ? 'secondary' : 'outline'}
-          aria-pressed={filters.pendingPayment}
-          onClick={() => onChange({ pendingPayment: !filters.pendingPayment })}
-        >
-          Con pago pendiente
-        </Button>
-        <Button
-          size="sm"
-          variant={filters.pendingRefund ? 'secondary' : 'outline'}
-          aria-pressed={filters.pendingRefund}
-          onClick={() => onChange({ pendingRefund: !filters.pendingRefund })}
-        >
-          Con reembolso pendiente
-        </Button>
-      </div>
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Pagos</legend>
+              <div className="flex flex-wrap gap-1.5">
+                <FilterChip
+                  active={filters.pendingPayment}
+                  onClick={() => onChange({ pendingPayment: !filters.pendingPayment })}
+                >
+                  Con pago pendiente
+                </FilterChip>
+                <FilterChip
+                  active={filters.pendingRefund}
+                  onClick={() => onChange({ pendingRefund: !filters.pendingRefund })}
+                >
+                  Con reembolso pendiente
+                </FilterChip>
+              </div>
+            </fieldset>
+          </div>
+
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Estado</legend>
+            <div className="flex flex-wrap gap-1.5">
+              {ORDER_STATUSES.map((status) => (
+                <FilterChip
+                  key={status}
+                  active={filters.statuses.includes(status)}
+                  dot={STATUS_DOT_CLASSES[status]}
+                  onClick={() => toggleStatus(status)}
+                >
+                  {STATUS_LABELS[status]}
+                </FilterChip>
+              ))}
+            </div>
+          </fieldset>
+
+          {activeCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start text-muted-foreground"
+              onClick={() =>
+                onChange({
+                  deliveryFrom: today,
+                  deliveryTo: today,
+                  statuses: DEFAULT_STATUSES,
+                  pendingPayment: false,
+                  pendingRefund: false,
+                })
+              }
+            >
+              Quitar filtros
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
