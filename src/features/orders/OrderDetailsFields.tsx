@@ -45,6 +45,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
   } = useFormContext<OrderDetailsFormValues>()
   const phoneCountry = useWatch({ control, name: 'phoneCountry' })
   const city = useWatch({ control, name: 'city' })
+  const cardMessage = useWatch({ control, name: 'cardMessage' }) ?? ''
 
   return (
     <>
@@ -191,7 +192,16 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
         </CardHeader>
         <CardContent>
           <FormField id="cardMessage" label="Mensaje (opcional)" error={errors.cardMessage?.message}>
-            <Textarea id="cardMessage" rows={4} maxLength={255} {...register('cardMessage')} />
+            {/* Same gift-card look as on the order page */}
+            <Textarea
+              id="cardMessage"
+              rows={5}
+              maxLength={255}
+              placeholder="Escribe el mensaje tal como va en la tarjeta"
+              className="min-h-32 border-petal-foreground/25 bg-white text-base leading-relaxed shadow-sm ring-4 ring-petal/60 md:text-base"
+              {...register('cardMessage')}
+            />
+            <span className="self-end text-xs text-muted-foreground tabular-nums">{cardMessage.length}/255</span>
           </FormField>
         </CardContent>
       </Card>

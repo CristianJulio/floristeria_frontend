@@ -45,6 +45,8 @@ export function ProductPicker({ onPick }: Props) {
           setOpen(true)
         }}
         onFocus={() => setOpen(true)}
+        // The box keeps the cursor after picking or Esc, so focusing it again won't reopen the list; a click does
+        onClick={() => setOpen(true)}
         // Delay so a click on a suggestion lands before the list closes
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={(event) => {

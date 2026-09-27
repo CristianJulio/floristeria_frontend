@@ -43,50 +43,54 @@ export function OrderItemsEditor({ items, onChange, error, unavailableIds }: Pro
       {items.length > 0 && (
         <ul className="text-sm">
           {items.map((item) => (
-            <li key={item.productId} className="flex items-center gap-2 border-b py-2 last:border-b-0">
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">{item.productName}</div>
+            // Two lines, so it fits narrow places (the order summary panel, the change-products dialog)
+            <li key={item.productId} className="flex flex-col gap-1.5 border-b py-2.5 last:border-b-0">
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1 font-medium">{item.productName}</div>
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  className="-mt-0.5 text-muted-foreground"
+                  aria-label={`Quitar ${item.productName}`}
+                  onClick={() => remove(item.productId)}
+                >
+                  ×
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
                 {unavailableIds?.has(item.productId) ? (
-                  <div className="text-xs font-medium text-destructive">No disponible — quítalo o reemplázalo</div>
+                  <div className="flex-1 text-xs font-medium text-destructive">No disponible — quítalo o reemplázalo</div>
                 ) : (
-                  <div className="text-xs text-muted-foreground">{formatMoney(item.price)} c/u</div>
+                  <div className="flex-1 text-xs text-muted-foreground tabular-nums">{formatMoney(item.price)} c/u</div>
                 )}
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    size="icon-xs"
+                    variant="outline"
+                    aria-label={`Quitar una unidad de ${item.productName}`}
+                    disabled={item.quantity <= 1}
+                    onClick={() => setQuantity(item.productId, item.quantity - 1)}
+                  >
+                    –
+                  </Button>
+                  <span className="w-7 text-center tabular-nums" aria-label="Cantidad">
+                    {item.quantity}
+                  </span>
+                  <Button
+                    type="button"
+                    size="icon-xs"
+                    variant="outline"
+                    aria-label={`Agregar una unidad de ${item.productName}`}
+                    disabled={item.quantity >= 999}
+                    onClick={() => setQuantity(item.productId, item.quantity + 1)}
+                  >
+                    +
+                  </Button>
+                </div>
+                <span className="w-20 text-right tabular-nums">{formatMoney(item.price * item.quantity)}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  aria-label={`Quitar una unidad de ${item.productName}`}
-                  disabled={item.quantity <= 1}
-                  onClick={() => setQuantity(item.productId, item.quantity - 1)}
-                >
-                  –
-                </Button>
-                <span className="w-8 text-center tabular-nums" aria-label="Cantidad">
-                  {item.quantity}
-                </span>
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  aria-label={`Agregar una unidad de ${item.productName}`}
-                  disabled={item.quantity >= 999}
-                  onClick={() => setQuantity(item.productId, item.quantity + 1)}
-                >
-                  +
-                </Button>
-              </div>
-              <span className="w-24 text-right tabular-nums">{formatMoney(item.price * item.quantity)}</span>
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                aria-label={`Quitar ${item.productName}`}
-                onClick={() => remove(item.productId)}
-              >
-                ×
-              </Button>
             </li>
           ))}
         </ul>
@@ -94,9 +98,9 @@ export function OrderItemsEditor({ items, onChange, error, unavailableIds }: Pro
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="flex justify-between border-t pt-2 font-semibold">
-        <span>Total</span>
-        <span className="tabular-nums">{formatMoney(total)}</span>
+      <div className="flex items-baseline justify-between border-t pt-3">
+        <span className="font-medium">Total</span>
+        <span className="text-xl font-semibold tabular-nums">{formatMoney(total)}</span>
       </div>
     </div>
   )
