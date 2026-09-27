@@ -1,9 +1,6 @@
 import { Link, useNavigate } from 'react-router'
-import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
-  STATUS_CLASSES,
-  STATUS_LABELS,
   formatDeliveryDay,
   formatDeliveryTime,
   formatItems,
@@ -11,11 +8,8 @@ import {
   formatPlace,
   pendingMoneyLabel,
 } from './order-format'
+import { OrderStatusBadge } from './OrderStatusBadge'
 import type { Order } from './orders-api'
-
-function StatusBadge({ order }: { order: Order }) {
-  return <Badge className={STATUS_CLASSES[order.status]}>{STATUS_LABELS[order.status]}</Badge>
-}
 
 function PendingMoney({ order }: { order: Order }) {
   const label = pendingMoneyLabel(order)
@@ -60,7 +54,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                   {formatItems(order)}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge order={order} />
+                  <OrderStatusBadge status={order.status} />
                 </TableCell>
                 <TableCell className="text-right">
                   <div>{formatMoney(order.balance.total)}</div>
@@ -83,7 +77,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="font-medium">{formatDeliveryTime(order)}</span>
-                <StatusBadge order={order} />
+                <OrderStatusBadge status={order.status} />
               </div>
               <div className="font-medium">{order.recipientName}</div>
               <div className="text-sm text-muted-foreground">

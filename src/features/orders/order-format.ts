@@ -1,4 +1,25 @@
-import type { Order, OrderStatus } from './orders-api'
+import type { Order, OrderStatus, PaymentMethod, PaymentType } from './orders-api'
+
+export const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
+  PAYMENT: 'Pago',
+  REFUND: 'Reembolso',
+  RETAINED: 'Retenido',
+}
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  NEQUI: 'Nequi',
+  PAYPAL: 'PayPal',
+  CASH: 'Efectivo',
+}
+
+// An instant (e.g. createdAt), shown in Colombia's time zone: "18 oct 2026, 3:45 p. m."
+export function formatDateTime(iso: string) {
+  return new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'America/Bogota',
+  }).format(new Date(iso))
+}
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Pendiente',

@@ -21,7 +21,28 @@ export type OrderBalance = {
   pendingRefund: number
 }
 
-// Mirrors the backend's OrderDto (only the fields the frontend uses so far)
+export type AuditUser = {
+  id: string
+  username: string
+}
+
+export type PaymentType = 'PAYMENT' | 'REFUND' | 'RETAINED'
+export type PaymentMethod = 'NEQUI' | 'PAYPAL' | 'CASH'
+
+export type OrderPayment = {
+  id: string
+  type: PaymentType
+  amount: number
+  method: PaymentMethod
+  sourceAccount: string | null
+  createdAt: string
+  createdBy: AuditUser
+  voidedAt: string | null
+  voidedBy: AuditUser | null
+  voidReason: string | null
+}
+
+// Mirrors the backend's OrderDto; dates arrive as ISO strings in JSON
 export type Order = {
   id: string
   senderName: string
@@ -30,13 +51,21 @@ export type Order = {
   addressLine2: string | null
   neighborhood: string | null
   city: string
+  deliveryNotes: string | null
+  cardMessage: string | null
   responsiblePhone: string
   deliveryDate: string
   deliveryTimeFrom: string | null
   deliveryTimeTo: string | null
   status: OrderStatus
+  cancellationReason: string | null
   items: OrderItem[]
+  payments: OrderPayment[]
   balance: OrderBalance
+  createdAt: string
+  createdBy: AuditUser
+  updatedAt: string | null
+  updatedBy: AuditUser | null
 }
 
 export type Pagination = {
@@ -54,6 +83,11 @@ export type OrdersFilters = {
   pendingPayment: boolean
   pendingRefund: boolean
   page: number
+}
+
+export async function fetchOrder(id: string) {
+  const body = await apiFetch<{ data: Order }>(`/api/orders/${id}`)
+  return body.data
 }
 
 export async function fetchOrders(filters: OrdersFilters) {
