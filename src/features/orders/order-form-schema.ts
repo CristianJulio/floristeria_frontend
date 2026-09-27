@@ -1,7 +1,13 @@
 import { z } from 'zod'
 import { todayInColombia } from '@/lib/dates'
-import { OTHER_COUNTRY, isValidInternationalPhone, onlyDigits, toInternationalPhone } from '@/lib/phone'
-import type { CreateOrderInput } from './orders-api'
+import {
+  OTHER_COUNTRY,
+  PHONE_COUNTRIES,
+  isValidInternationalPhone,
+  onlyDigits,
+  toInternationalPhone,
+} from '@/lib/phone'
+import type { CreateOrderInput, Order, UpdateOrderInput } from './orders-api'
 
 export const CITIES = ['Barranquilla', 'Soledad'] as const
 
@@ -9,26 +15,54 @@ const required = (max: number) => z.string().trim().min(1, 'Este campo es obliga
 const optional = (max: number) => z.string().trim().max(max, `Máximo ${max} caracteres`)
 const time = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d)?$/, 'Hora no válida')
 
-// Same limits as the backend's create-order schema; every input holds text, empty means "not given"
-export const orderFormSchema = z
-  .object({
-    recipientName: required(50),
-    addressLine1: required(40),
-    addressLine2: optional(40),
-    neighborhood: optional(30),
-    city: z.enum(CITIES, { error: 'Elige la ciudad' }),
-    deliveryNotes: optional(255),
-    cardMessage: optional(255),
-    senderName: required(50),
-    phoneCountry: z.string(),
-    phoneOtherCode: z.string(),
-    phoneNumber: z.string(),
-    deliveryDate: z
-      .string()
-      .min(1, 'Elige la fecha de entrega')
-      .refine((date) => date >= todayInColombia(), 'La fecha de entrega no puede estar en el pasado'),
-    deliveryTimeFrom: time,
-    deliveryTimeTo: time,
+// The order's own fields, shared by the new-order and edit forms.
+// Same limits as the backend; every input holds text, empty means "not given"
+const orderDetailsFields = z.object({
+  recipientName: required(50),
+  addressLine1: required(40),
+  addressLine2: optional(40),
+  neighborhood: optional(30),
+  city: z.enum(CITIES, { error: 'Elige la ciudad' }),
+  deliveryNotes: optional(255),
+  cardMessage: optional(255),
+  senderName: required(50),
+  phoneCountry: z.string(),
+  phoneOtherCode: z.string(),
+  phoneNumber: z.string(),
+  deliveryDate: z.string().min(1, 'Elige la fecha de entrega'),
+  deliveryTimeFrom: time,
+  deliveryTimeTo: time,
+})
+
+type DetailsValues = z.infer<typeof orderDetailsFields>
+
+// Rules that involve more than one field. A date already in the past is only accepted if it
+// isn't being changed (e.g. editing the address of an overdue order that's still being prepared)
+function checkDetails(values: DetailsValues, ctx: z.RefinementCtx, unchangedDate?: string) {
+  if (values.deliveryDate < todayInColombia() && values.deliveryDate !== unchangedDate) {
+    ctx.addIssue({ code: 'custom', path: ['deliveryDate'], message: 'La fecha de entrega no puede estar en el pasado' })
+  }
+
+  const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
+  if (values.phoneCountry === OTHER_COUNTRY && !onlyDigits(values.phoneOtherCode)) {
+    ctx.addIssue({ code: 'custom', path: ['phoneOtherCode'], message: 'Escribe el código del país' })
+  } else if (!onlyDigits(values.phoneNumber)) {
+    ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'Escribe el teléfono' })
+  } else if (!isValidInternationalPhone(toInternationalPhone(code, values.phoneNumber))) {
+    ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'El teléfono no parece válido' })
+  }
+
+  if (values.deliveryTimeFrom && values.deliveryTimeTo && values.deliveryTimeFrom > values.deliveryTimeTo) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['deliveryTimeTo'],
+      message: 'La hora final no puede ser antes de la inicial',
+    })
+  }
+}
+
+export const orderFormSchema = orderDetailsFields
+  .extend({
     items: z
       .array(
         z.object({
@@ -40,26 +74,15 @@ export const orderFormSchema = z
       )
       .min(1, 'Agrega al menos un producto'),
   })
-  .superRefine((values, ctx) => {
-    const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
-    if (values.phoneCountry === OTHER_COUNTRY && !onlyDigits(values.phoneOtherCode)) {
-      ctx.addIssue({ code: 'custom', path: ['phoneOtherCode'], message: 'Escribe el código del país' })
-    } else if (!onlyDigits(values.phoneNumber)) {
-      ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'Escribe el teléfono' })
-    } else if (!isValidInternationalPhone(toInternationalPhone(code, values.phoneNumber))) {
-      ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'El teléfono no parece válido' })
-    }
-
-    if (values.deliveryTimeFrom && values.deliveryTimeTo && values.deliveryTimeFrom > values.deliveryTimeTo) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['deliveryTimeTo'],
-        message: 'La hora final no puede ser antes de la inicial',
-      })
-    }
-  })
+  .superRefine((values, ctx) => checkDetails(values, ctx))
 
 export type OrderFormValues = z.infer<typeof orderFormSchema>
+
+export function orderDetailsFormSchema(order: Order) {
+  return orderDetailsFields.superRefine((values, ctx) => checkDetails(values, ctx, order.deliveryDate))
+}
+
+export type OrderDetailsFormValues = DetailsValues
 
 export function emptyOrderForm(): OrderFormValues {
   return {
@@ -81,12 +104,69 @@ export function emptyOrderForm(): OrderFormValues {
   }
 }
 
+// "+573001234567" -> Colombia + "3001234567". Country codes never start with another code,
+// so matching the listed ones by prefix is safe. Other countries go under "Otro", guessing
+// that the last 10 digits are the number; staff can correct the split
+function splitPhone(phone: string) {
+  const digits = onlyDigits(phone)
+  const country = PHONE_COUNTRIES.find((c) => digits.startsWith(c.code))
+  if (country) return { phoneCountry: country.code, phoneOtherCode: '', phoneNumber: digits.slice(country.code.length) }
+  const numberLength = Math.min(10, digits.length - 1)
+  return {
+    phoneCountry: OTHER_COUNTRY,
+    phoneOtherCode: digits.slice(0, digits.length - numberLength),
+    phoneNumber: digits.slice(-numberLength),
+  }
+}
+
+export function orderToDetailsForm(order: Order): OrderDetailsFormValues {
+  return {
+    recipientName: order.recipientName,
+    addressLine1: order.addressLine1,
+    addressLine2: order.addressLine2 ?? '',
+    neighborhood: order.neighborhood ?? '',
+    city: (CITIES as readonly string[]).includes(order.city) ? (order.city as (typeof CITIES)[number]) : 'Barranquilla',
+    deliveryNotes: order.deliveryNotes ?? '',
+    cardMessage: order.cardMessage ?? '',
+    senderName: order.senderName,
+    ...splitPhone(order.responsiblePhone),
+    deliveryDate: order.deliveryDate,
+    deliveryTimeFrom: order.deliveryTimeFrom ?? '',
+    deliveryTimeTo: order.deliveryTimeTo ?? '',
+  }
+}
+
+function phoneOf(values: DetailsValues) {
+  const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
+  return toInternationalPhone(code, values.phoneNumber)
+}
+
+// Not trimmed inside, so the card keeps its line breaks
+const cardText = (value: string) => (value.trim() ? value : null)
+const optionalText = (value: string) => value.trim() || null
+
 // Empty optional fields are left out, as the API expects
 export function toCreateOrderInput(values: OrderFormValues): CreateOrderInput {
-  const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
-  const optionalText = (value: string) => value.trim() || undefined
-
   return {
+    senderName: values.senderName.trim(),
+    recipientName: values.recipientName.trim(),
+    addressLine1: values.addressLine1.trim(),
+    addressLine2: optionalText(values.addressLine2) ?? undefined,
+    neighborhood: optionalText(values.neighborhood) ?? undefined,
+    city: values.city,
+    deliveryNotes: optionalText(values.deliveryNotes) ?? undefined,
+    cardMessage: cardText(values.cardMessage) ?? undefined,
+    responsiblePhone: phoneOf(values),
+    deliveryDate: values.deliveryDate,
+    deliveryTimeFrom: values.deliveryTimeFrom || undefined,
+    deliveryTimeTo: values.deliveryTimeTo || undefined,
+    items: values.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+  }
+}
+
+// Only the fields that changed are sent; emptied optional fields become null, which clears them
+export function toUpdateOrderInput(values: OrderDetailsFormValues, order: Order): UpdateOrderInput {
+  const next: Required<UpdateOrderInput> = {
     senderName: values.senderName.trim(),
     recipientName: values.recipientName.trim(),
     addressLine1: values.addressLine1.trim(),
@@ -94,12 +174,15 @@ export function toCreateOrderInput(values: OrderFormValues): CreateOrderInput {
     neighborhood: optionalText(values.neighborhood),
     city: values.city,
     deliveryNotes: optionalText(values.deliveryNotes),
-    // Not trimmed inside, so the card keeps its line breaks
-    cardMessage: values.cardMessage.trim() ? values.cardMessage : undefined,
-    responsiblePhone: toInternationalPhone(code, values.phoneNumber),
+    cardMessage: cardText(values.cardMessage),
+    responsiblePhone: phoneOf(values),
     deliveryDate: values.deliveryDate,
-    deliveryTimeFrom: values.deliveryTimeFrom || undefined,
-    deliveryTimeTo: values.deliveryTimeTo || undefined,
-    items: values.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+    deliveryTimeFrom: values.deliveryTimeFrom || null,
+    deliveryTimeTo: values.deliveryTimeTo || null,
   }
+  const changes: UpdateOrderInput = {}
+  for (const key of Object.keys(next) as (keyof UpdateOrderInput)[]) {
+    if (next[key] !== order[key]) Object.assign(changes, { [key]: next[key] })
+  }
+  return changes
 }

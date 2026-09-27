@@ -120,6 +120,33 @@ export async function createOrder(input: CreateOrderInput) {
   return body.data
 }
 
+// Only the fields sent change; null clears an optional field
+export type UpdateOrderInput = {
+  senderName?: string
+  recipientName?: string
+  addressLine1?: string
+  addressLine2?: string | null
+  neighborhood?: string | null
+  city?: string
+  deliveryNotes?: string | null
+  cardMessage?: string | null
+  responsiblePhone?: string
+  deliveryDate?: string
+  deliveryTimeFrom?: string | null
+  deliveryTimeTo?: string | null
+}
+
+export async function updateOrderDetails(id: string, changes: UpdateOrderInput) {
+  const body = await apiFetch<{ data: Order }>(`/api/orders/${id}`, { method: 'PATCH', body: changes })
+  return body.data
+}
+
+// Replaces the whole list; the backend prices every item at today's catalog price
+export async function replaceOrderItems(id: string, items: { productId: string; quantity: number }[]) {
+  const body = await apiFetch<{ data: Order }>(`/api/orders/${id}/items`, { method: 'PUT', body: { items } })
+  return body.data
+}
+
 export type RecordPaymentInput = {
   type: PaymentType
   amount: number

@@ -8,6 +8,7 @@ import { AppLayout } from '@/components/AppLayout'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
+import { EditOrderPage } from '@/features/orders/EditOrderPage'
 import { NewOrderPage } from '@/features/orders/NewOrderPage'
 import { OrderDetailPage } from '@/features/orders/OrderDetailPage'
 import { OrdersListPage } from '@/features/orders/OrdersListPage'
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
           { index: true, element: <OrdersListPage /> },
           { path: 'pedidos/nuevo', element: <NewOrderPage /> },
           { path: 'pedidos/:id', element: <OrderDetailPage /> },
+          { path: 'pedidos/:id/editar', element: <EditOrderPage /> },
           { path: 'productos', element: <ProductsPage /> },
         ],
       },

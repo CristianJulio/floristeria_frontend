@@ -10,10 +10,12 @@ type Props = {
   items: Item[]
   onChange: (items: Item[]) => void
   error?: string
+  // Products that can no longer be sold; they're highlighted so staff remove or replace them
+  unavailableIds?: Set<string>
 }
 
 // The products list of an order form: search to add, – / + to change quantities, × to remove
-export function OrderItemsEditor({ items, onChange, error }: Props) {
+export function OrderItemsEditor({ items, onChange, error, unavailableIds }: Props) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   // A product already in the list gets one more unit instead of a second row
@@ -44,7 +46,11 @@ export function OrderItemsEditor({ items, onChange, error }: Props) {
             <li key={item.productId} className="flex items-center gap-2 border-b py-2 last:border-b-0">
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium">{item.productName}</div>
-                <div className="text-xs text-muted-foreground">{formatMoney(item.price)} c/u</div>
+                {unavailableIds?.has(item.productId) ? (
+                  <div className="text-xs font-medium text-destructive">No disponible — quítalo o reemplázalo</div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">{formatMoney(item.price)} c/u</div>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <Button

@@ -1,6 +1,9 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
+import { useAuth } from '@/features/auth/auth-context'
+import { ChangeItemsDialog } from './ChangeItemsDialog'
+import { areItemsEditable, isOrderEditable } from './order-rules'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ApiError } from '@/lib/api-client'
@@ -66,11 +69,22 @@ function CardMessageCard({ order }: { order: Order }) {
 }
 
 function ItemsCard({ order }: { order: Order }) {
+  const { can } = useAuth()
+  const [changing, setChanging] = useState(false)
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Productos</CardTitle>
+        {can('orders.update_items') && areItemsEditable(order) && (
+          <div className="pt-2">
+            <Button size="sm" variant="outline" onClick={() => setChanging(true)}>
+              Cambiar productos
+            </Button>
+          </div>
+        )}
       </CardHeader>
+      {changing && <ChangeItemsDialog order={order} onClose={() => setChanging(false)} />}
       <CardContent>
         <ul className="text-sm">
           {order.items.map((item) => (
@@ -118,6 +132,7 @@ function RecordCard({ order }: { order: Order }) {
 export function OrderDetailPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  const { can } = useAuth()
 
   const { data: order, isPending, isError, error, refetch } = useQuery({
     queryKey: ['order', id],
@@ -175,7 +190,14 @@ export function OrderDetailPage() {
             Entrega: {formatDeliveryDay(order.deliveryDate)} · {formatDeliveryTime(order)}
           </p>
         </div>
-        <OrderStatusActions order={order} />
+        <div className="flex flex-wrap gap-2">
+          {can('orders.update') && isOrderEditable(order) && (
+            <Button variant="outline" nativeButton={false} render={<Link to={`/pedidos/${order.id}/editar`} />}>
+              Editar datos
+            </Button>
+          )}
+          <OrderStatusActions order={order} />
+        </div>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">

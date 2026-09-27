@@ -46,6 +46,11 @@ export async function updateProduct(id: string, changes: Partial<ProductInput>) 
   return body.data
 }
 
+export async function fetchProduct(id: string) {
+  const body = await apiFetch<{ data: Product }>(`/api/products/${id}`)
+  return body.data
+}
+
 export async function fetchProducts(filters: ProductsFilters = {}) {
   return apiFetch<{ data: Product[]; pagination: Pagination }>('/api/products', {
     query: {
