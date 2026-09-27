@@ -45,11 +45,13 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
   const today = todayInColombia()
   const tomorrow = addDays(today, 1)
   const week = weekRange(today)
+  const nextWeek = weekRange(addDays(week.from, 7))
 
   const quickRanges = [
     { value: 'hoy', label: 'Hoy', from: today, to: today },
     { value: 'manana', label: 'Mañana', from: tomorrow, to: tomorrow },
     { value: 'semana', label: 'Esta semana', from: week.from, to: week.to },
+    { value: 'proxima', label: 'Próxima semana', from: nextWeek.from, to: nextWeek.to },
   ]
   const activeRange = quickRanges.find((r) => r.from === filters.deliveryFrom && r.to === filters.deliveryTo)
 
