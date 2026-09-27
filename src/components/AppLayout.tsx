@@ -20,7 +20,7 @@ export function AppLayout() {
     <div className="min-h-svh">
       <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b bg-card px-4 py-3">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="font-semibold text-primary">Floristería</span>
+          <span className="font-heading text-lg font-semibold tracking-tight text-primary">Floristería</span>
           <nav className="flex gap-1 overflow-x-auto" aria-label="Secciones">
             {sections.map((section) => (
               <NavLink
