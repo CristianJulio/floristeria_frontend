@@ -40,8 +40,10 @@ export function OrderItemsEditor({ items, onChange, error, unavailableIds }: Pro
     <div className="flex flex-col gap-3">
       <ProductPicker onPick={add} />
 
+      {/* A long list scrolls on its own, so the search, total and buttons around it stay on screen
+          (in the change-products dialog and in the new order's summary panel) */}
       {items.length > 0 && (
-        <ul className="text-sm">
+        <ul className="-mr-2 max-h-[40svh] overflow-y-auto pr-2 text-sm">
           {items.map((item) => (
             // Two lines, so it fits narrow places (the order summary panel, the change-products dialog)
             <li key={item.productId} className="flex flex-col gap-1.5 border-b py-2.5 last:border-b-0">
