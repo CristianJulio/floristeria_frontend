@@ -1,14 +1,16 @@
+import '@fontsource/great-vibes'
+import '@fontsource/marcellus'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Navigate, useLocation, useNavigate, type Location } from 'react-router'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ApiError } from '@/lib/api-client'
 import { useAuth } from './auth-context'
+import { BotanicalIllustration } from './BotanicalIllustration'
 
 // Same limits as the backend's login schema
 const loginSchema = z.object({
@@ -56,16 +58,30 @@ export function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Floristería</CardTitle>
-          <CardDescription>Inicia sesión para continuar</CardDescription>
-        </CardHeader>
-        <CardContent>
+    <main className="grid min-h-svh grid-rows-[auto_1fr] md:grid-cols-2 md:grid-rows-1">
+      {/* Green panel: a band with the shop name on phones; from tablets up, half the screen with the bouquet */}
+      <aside className="relative overflow-hidden bg-primary px-6 py-5 text-primary-foreground md:p-12">
+        <div className="relative z-10 flex flex-col gap-6">
+          <span className="font-caps text-base tracking-[0.16em] uppercase md:text-lg">Floristería Barranquilla</span>
+          <div className="hidden max-w-md flex-col gap-3 md:flex">
+            <p className="font-script text-6xl leading-[1.05] text-balance">Detalles que hablan por ti 🌸</p>
+            <p className="text-sm text-primary-foreground/80">Sistema de pedidos. Acceso solo para el personal.</p>
+          </div>
+        </div>
+        <BotanicalIllustration className="pointer-events-none absolute right-0 bottom-0 hidden h-[80%] max-h-[720px] translate-y-[2%] md:block" />
+      </aside>
+
+      <div className="flex items-center justify-center px-6 py-10">
+        <div className="flex w-full max-w-sm flex-col gap-6 rounded-xl border bg-card p-6 shadow-sm sm:p-8">
+          <div className="flex flex-col gap-1">
+            {/* Same face as the shop name on the green panel (it only has one weight) */}
+            <h1 className="font-caps text-3xl tracking-normal">Iniciar sesión</h1>
+            <p className="text-sm text-muted-foreground">Ingresa con tu usuario y contraseña.</p>
+          </div>
+
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
             {locationState.sessionExpired && !submitError && (
-              <p role="status" className="rounded-md bg-muted px-3 py-2 text-sm">
+              <p role="status" className="rounded-md bg-secondary px-3 py-2 text-sm text-secondary-foreground">
                 Tu sesión expiró. Inicia sesión de nuevo.
               </p>
             )}
@@ -104,8 +120,8 @@ export function LoginPage() {
               {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </main>
   )
 }
