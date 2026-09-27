@@ -6,6 +6,8 @@ import { useAuth } from '@/features/auth/auth-context'
 const SECTIONS = [
   { to: '/', label: 'Pedidos', permission: 'orders.read', end: true },
   { to: '/productos', label: 'Productos', permission: 'products.read', end: false },
+  { to: '/usuarios', label: 'Usuarios', permission: 'users.read', end: false },
+  { to: '/roles', label: 'Roles', permission: 'roles.read', end: false },
 ]
 
 // The frame around every logged-in page

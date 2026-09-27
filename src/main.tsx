@@ -13,6 +13,8 @@ import { NewOrderPage } from '@/features/orders/NewOrderPage'
 import { OrderDetailPage } from '@/features/orders/OrderDetailPage'
 import { OrdersListPage } from '@/features/orders/OrdersListPage'
 import { ProductsPage } from '@/features/products/ProductsPage'
+import { RolePage } from '@/features/roles/RolePage'
+import { RolesPage } from '@/features/roles/RolesPage'
 
 const queryClient = new QueryClient()
 
@@ -29,6 +31,9 @@ const router = createBrowserRouter([
           { path: 'pedidos/:id', element: <OrderDetailPage /> },
           { path: 'pedidos/:id/editar', element: <EditOrderPage /> },
           { path: 'productos', element: <ProductsPage /> },
+          { path: 'roles', element: <RolesPage /> },
+          { path: 'roles/nuevo', element: <RolePage /> },
+          { path: 'roles/:id', element: <RolePage /> },
         ],
       },
     ],
