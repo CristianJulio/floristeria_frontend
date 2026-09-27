@@ -37,15 +37,10 @@ export const STATUS_CLASSES: Record<OrderStatus, string> = {
   CANCELLED: 'bg-muted text-muted-foreground line-through',
 }
 
-const money = new Intl.NumberFormat('es-CO', {
-  style: 'currency',
-  currency: 'COP',
-  maximumFractionDigits: 0,
-})
+import { formatMoney } from '@/lib/money'
 
-export function formatMoney(amount: number) {
-  return money.format(amount)
-}
+// Re-exported so the orders feature keeps importing it from here
+export { formatMoney }
 
 // "2026-10-18" -> "sáb 18 oct"; the date is read as a calendar day, not converted between time zones
 export function formatDeliveryDay(date: string) {

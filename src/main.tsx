@@ -11,6 +11,7 @@ import { RequireAuth } from '@/features/auth/RequireAuth'
 import { NewOrderPage } from '@/features/orders/NewOrderPage'
 import { OrderDetailPage } from '@/features/orders/OrderDetailPage'
 import { OrdersListPage } from '@/features/orders/OrdersListPage'
+import { ProductsPage } from '@/features/products/ProductsPage'
 
 const queryClient = new QueryClient()
 
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
           { index: true, element: <OrdersListPage /> },
           { path: 'pedidos/nuevo', element: <NewOrderPage /> },
           { path: 'pedidos/:id', element: <OrderDetailPage /> },
+          { path: 'productos', element: <ProductsPage /> },
         ],
       },
     ],
