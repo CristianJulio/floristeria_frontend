@@ -8,7 +8,8 @@ import { AppLayout } from '@/components/AppLayout'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
-import { TodayDeliveriesPage } from '@/features/orders/TodayDeliveriesPage'
+import { OrderDetailPage } from '@/features/orders/OrderDetailPage'
+import { OrdersListPage } from '@/features/orders/OrdersListPage'
 
 const queryClient = new QueryClient()
 
@@ -19,7 +20,10 @@ const router = createBrowserRouter([
     children: [
       {
         element: <AppLayout />,
-        children: [{ index: true, element: <TodayDeliveriesPage /> }],
+        children: [
+          { index: true, element: <OrdersListPage /> },
+          { path: 'pedidos/:id', element: <OrderDetailPage /> },
+        ],
       },
     ],
   },
