@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource/marcellus";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,8 +11,9 @@
     /* Titles only (shop name, page, card and dialog titles); everything else stays in Geist */
     --font-heading: 'Bricolage Grotesque Variable', 'Geist Variable', sans-serif;
     --font-sans: 'Geist Variable', sans-serif;
-    /* Login panel only: the shop name in capitals and the slogan in calligraphy */
+    /* The shop name, like a logo (header and login), and the login title */
     --font-caps: 'Marcellus', Georgia, serif;
+    /* Login panel only: the slogan in calligraphy */
     --font-script: 'Great Vibes', cursive;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
