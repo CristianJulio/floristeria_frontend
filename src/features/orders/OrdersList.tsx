@@ -34,9 +34,6 @@ function PendingMoney({ order }: { order: Order }) {
 // Finished orders stay in the list but step back visually
 const isClosed = (order: Order) => order.status === 'DELIVERED' || order.status === 'CANCELLED'
 
-const HEAD = 'h-9 text-xs font-medium tracking-wide text-muted-foreground uppercase first:pl-4 last:pr-4'
-const CELL = 'py-3 first:pl-4 last:pr-4'
-
 // A table on computers, cards on phones; both open the order's detail
 export function OrdersList({ orders }: { orders: Order[] }) {
   const navigate = useNavigate()
@@ -46,14 +43,14 @@ export function OrdersList({ orders }: { orders: Order[] }) {
     <>
       <div className="hidden overflow-hidden rounded-xl border bg-card md:block">
         <Table>
-          <TableHeader className="bg-muted/60">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className={HEAD}>Entrega</TableHead>
-              <TableHead className={HEAD}>Destinatario</TableHead>
-              <TableHead className={HEAD}>Lugar</TableHead>
-              <TableHead className={HEAD}>Productos</TableHead>
-              <TableHead className={HEAD}>Estado</TableHead>
-              <TableHead className={cn(HEAD, 'text-right')}>Total</TableHead>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Entrega</TableHead>
+              <TableHead>Destinatario</TableHead>
+              <TableHead>Lugar</TableHead>
+              <TableHead>Productos</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="text-right">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -63,11 +60,11 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                 className={cn('cursor-pointer hover:bg-secondary/40', isClosed(order) && 'text-muted-foreground')}
                 onClick={() => navigate(detailPath(order))}
               >
-                <TableCell className={CELL}>
+                <TableCell>
                   <div className="text-[15px] font-medium tabular-nums">{formatDeliveryTime(order)}</div>
                   <div className="text-[13px] text-muted-foreground">{formatDeliveryDay(order.deliveryDate)}</div>
                 </TableCell>
-                <TableCell className={CELL}>
+                <TableCell>
                   <Link
                     to={detailPath(order)}
                     className={cn('text-[15px] font-medium hover:underline', !isClosed(order) && 'text-foreground')}
@@ -76,14 +73,14 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                   </Link>
                   <div className="text-[13px] text-muted-foreground">De {order.senderName}</div>
                 </TableCell>
-                <TableCell className={CELL}>{formatPlace(order)}</TableCell>
-                <TableCell className={cn(CELL, 'max-w-64 truncate text-muted-foreground')} title={formatItems(order)}>
+                <TableCell>{formatPlace(order)}</TableCell>
+                <TableCell className="max-w-64 truncate text-muted-foreground" title={formatItems(order)}>
                   {formatItems(order)}
                 </TableCell>
-                <TableCell className={CELL}>
+                <TableCell>
                   <OrderStatusBadge status={order.status} />
                 </TableCell>
-                <TableCell className={cn(CELL, 'text-right')}>
+                <TableCell className="text-right">
                   <div className="flex flex-col items-end gap-1">
                     <span className="font-medium tabular-nums">{formatMoney(order.balance.total)}</span>
                     <PendingMoney order={order} />

@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { PackageSearchIcon } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 import { PaginationControls } from '@/components/PaginationControls'
+import { SearchInput } from '@/components/SearchInput'
+import { SegmentedControl } from '@/components/SegmentedControl'
 import { useAuth } from '@/features/auth/auth-context'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
@@ -98,30 +101,32 @@ export function ProductsPage() {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Productos</h1>
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-xl font-semibold">Productos</h1>
+          {data && (
+            <p className="text-sm text-muted-foreground">
+              {data.pagination.total} {data.pagination.total === 1 ? 'producto' : 'productos'}
+            </p>
+          )}
+        </div>
         {can('products.create') && <Button onClick={() => setDialogProduct('new')}>Nuevo producto</Button>}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Input
-          type="search"
-          placeholder="Buscar por nombre"
-          aria-label="Buscar productos"
-          className="max-w-xs"
+        <SegmentedControl
+          label="Disponibilidad"
+          options={AVAILABILITY_FILTERS}
+          value={availability.value}
+          onChange={(value) => setParam('disponibles', value === 'todos' ? null : value)}
+          className="flex w-full sm:w-auto"
+        />
+        <SearchInput
+          label="Buscar productos"
+          placeholder="Nombre del producto"
+          className="w-full sm:w-72"
           value={searchText}
           onChange={(event) => setSearchText(event.target.value)}
         />
-        {AVAILABILITY_FILTERS.map((filter) => (
-          <Button
-            key={filter.value}
-            size="sm"
-            variant={availability.value === filter.value ? 'secondary' : 'ghost'}
-            aria-pressed={availability.value === filter.value}
-            onClick={() => setParam('disponibles', filter.value === 'todos' ? null : filter.value)}
-          >
-            {filter.label}
-          </Button>
-        ))}
       </div>
 
       {isPending ? (
@@ -134,10 +139,14 @@ export function ProductsPage() {
           </Button>
         </div>
       ) : data.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No hay productos con estos filtros.</p>
+        <EmptyState
+          icon={PackageSearchIcon}
+          title="No hay productos con estos filtros."
+          hint="Prueba con otro nombre o cambia la disponibilidad."
+        />
       ) : (
         <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
-          <div className="hidden md:block">
+          <div className="hidden overflow-hidden rounded-xl border bg-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -161,7 +170,7 @@ export function ProductsPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{formatMoney(product.price)}</TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">{formatMoney(product.price)}</TableCell>
                     <TableCell>
                       <AvailabilitySwitch product={product} disabled={!canEdit} />
                     </TableCell>
@@ -180,7 +189,7 @@ export function ProductsPage() {
 
           <ul className="flex flex-col gap-2 md:hidden">
             {data.data.map((product) => (
-              <li key={product.id} className="flex items-center gap-3 rounded-lg border p-3">
+              <li key={product.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
                 <ProductImage product={product} />
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">{product.name}</div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { Flower2Icon } from 'lucide-react'
 import { useAuth } from '@/features/auth/auth-context'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/EmptyState'
 import { PaginationControls } from '@/components/PaginationControls'
 import { todayInColombia } from '@/lib/dates'
 import { OrdersFilterBar } from './OrdersFilterBar'
@@ -60,11 +61,11 @@ export function OrdersListPage() {
           </Button>
         </div>
       ) : data.data.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed bg-card px-6 py-12 text-center">
-          <Flower2Icon className="size-8 text-primary/60" aria-hidden />
-          <p className="font-medium">No hay pedidos con estos filtros.</p>
-          <p className="text-sm text-muted-foreground">Prueba con otras fechas u otros estados.</p>
-        </div>
+        <EmptyState
+          icon={Flower2Icon}
+          title="No hay pedidos con estos filtros."
+          hint="Prueba con otras fechas u otros estados."
+        />
       ) : (
         <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
           <OrdersList orders={data.data} />

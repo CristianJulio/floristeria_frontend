@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
+import { ChevronRightIcon, ShieldIcon } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/auth-context'
 import { fetchRoles } from './roles-api'
@@ -11,7 +13,14 @@ export function RolesPage() {
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Roles</h1>
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-xl font-semibold">Roles</h1>
+          {roles && (
+            <p className="text-sm text-muted-foreground">
+              {roles.length} {roles.length === 1 ? 'rol' : 'roles'}
+            </p>
+          )}
+        </div>
         {can('roles.create') && (
           <Button nativeButton={false} render={<Link to="/roles/nuevo" />}>
             Nuevo rol
@@ -29,24 +38,29 @@ export function RolesPage() {
           </Button>
         </div>
       ) : roles.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aún no hay roles.</p>
+        <EmptyState icon={ShieldIcon} title="Aún no hay roles." />
       ) : (
         <ul className="flex flex-col gap-2">
           {roles.map((role) => (
             <li key={role.id}>
               <Link
                 to={`/roles/${role.id}`}
-                className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted"
+                className="flex items-center justify-between gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40"
               >
                 <div className="min-w-0">
                   <div className="font-medium">
                     {role.name}
-                    {role.isProtected && <span className="ml-2 text-xs font-normal text-muted-foreground">(fijo)</span>}
+                    {role.isProtected && (
+                      <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                        Fijo
+                      </span>
+                    )}
                   </div>
                   {role.description && <div className="truncate text-sm text-muted-foreground">{role.description}</div>}
                 </div>
-                <span className="shrink-0 text-sm text-muted-foreground">
+                <span className="flex shrink-0 items-center gap-1 text-sm text-muted-foreground">
                   {role.permissions.length} {role.permissions.length === 1 ? 'permiso' : 'permisos'}
+                  <ChevronRightIcon className="size-4" aria-hidden />
                 </span>
               </Link>
             </li>

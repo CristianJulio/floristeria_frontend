@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
+import { UsersIcon } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
+import { SegmentedControl } from '@/components/SegmentedControl'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/features/auth/auth-context'
@@ -73,10 +76,20 @@ export function UsersPage() {
   const needsRoles = can('users.create') || can('users.update') || can('users.reactivate')
   const rolesReady = canReadRoles && rolesQuery.isSuccess
 
+  // e.g. "5 usuarios activos", "1 usuario eliminado"
+  const count = usersQuery.data?.length
+  const countLabel =
+    count === undefined
+      ? null
+      : `${count} ${count === 1 ? 'usuario' : 'usuarios'} ${filter.status === 'active' ? 'activo' : 'eliminado'}${count === 1 ? '' : 's'}`
+
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Usuarios</h1>
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-xl font-semibold">Usuarios</h1>
+          {countLabel && <p className="text-sm text-muted-foreground">{countLabel}</p>}
+        </div>
         {can('users.create') && (
           <Button disabled={!rolesReady} onClick={() => setDialog({ kind: 'new' })}>
             Nuevo usuario
@@ -84,19 +97,13 @@ export function UsersPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {STATUS_FILTERS.map((option) => (
-          <Button
-            key={option.value}
-            size="sm"
-            variant={filter.value === option.value ? 'secondary' : 'ghost'}
-            aria-pressed={filter.value === option.value}
-            onClick={() => setParams(option.value === 'activos' ? {} : { estado: option.value }, { replace: true })}
-          >
-            {option.label}
-          </Button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Estado de los usuarios"
+        options={STATUS_FILTERS}
+        value={filter.value}
+        onChange={(value) => setParams(value === 'activos' ? {} : { estado: value }, { replace: true })}
+        className="self-start"
+      />
 
       {needsRoles && !canReadRoles && (
         <p className="text-sm text-muted-foreground">
@@ -114,12 +121,13 @@ export function UsersPage() {
           </Button>
         </div>
       ) : usersQuery.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {filter.status === 'active' ? 'No hay usuarios activos.' : 'No hay usuarios eliminados.'}
-        </p>
+        <EmptyState
+          icon={UsersIcon}
+          title={filter.status === 'active' ? 'No hay usuarios activos.' : 'No hay usuarios eliminados.'}
+        />
       ) : (
         <>
-          <div className="hidden md:block">
+          <div className="hidden overflow-hidden rounded-xl border bg-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -154,7 +162,7 @@ export function UsersPage() {
 
           <ul className="flex flex-col gap-2 md:hidden">
             {usersQuery.data.map((user) => (
-              <li key={user.id} className="flex flex-col gap-2 rounded-lg border p-3">
+              <li key={user.id} className="flex flex-col gap-2 rounded-xl border bg-card p-4">
                 <div>
                   <div className="font-medium">
                     {user.name} {user.lastName}

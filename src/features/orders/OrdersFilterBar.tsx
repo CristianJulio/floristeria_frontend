@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { cn } from 'cn'
-import { ChevronDownIcon, SearchIcon, SlidersHorizontalIcon } from 'lucide-react'
+import { ChevronDownIcon, SlidersHorizontalIcon } from 'lucide-react'
+import { SearchInput } from '@/components/SearchInput'
+import { SegmentedControl } from '@/components/SegmentedControl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -45,10 +47,11 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
   const week = weekRange(today)
 
   const quickRanges = [
-    { label: 'Hoy', from: today, to: today },
-    { label: 'Mañana', from: tomorrow, to: tomorrow },
-    { label: 'Esta semana', from: week.from, to: week.to },
+    { value: 'hoy', label: 'Hoy', from: today, to: today },
+    { value: 'manana', label: 'Mañana', from: tomorrow, to: tomorrow },
+    { value: 'semana', label: 'Esta semana', from: week.from, to: week.to },
   ]
+  const activeRange = quickRanges.find((r) => r.from === filters.deliveryFrom && r.to === filters.deliveryTo)
 
   // Searches after a short pause instead of on every keystroke
   const [search, setSearch] = useState(filters.search)
@@ -59,7 +62,7 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
   }, [search, filters.search, onChange])
 
   // How many of the tucked-away filters differ from the defaults, shown on the "Filtros" button
-  const customDates = !quickRanges.some((r) => r.from === filters.deliveryFrom && r.to === filters.deliveryTo)
+  const customDates = activeRange === undefined
   const customStatuses =
     filters.statuses.length !== DEFAULT_STATUSES.length ||
     !DEFAULT_STATUSES.every((status) => filters.statuses.includes(status))
@@ -77,41 +80,25 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
     <div className="flex flex-col gap-3">
       {/* The everyday controls: the day and the search. Everything else is under "Filtros" */}
       <div className="flex flex-wrap items-center gap-2">
-        <div role="group" aria-label="Fecha de entrega" className="flex w-full rounded-lg border bg-card p-0.5 sm:inline-flex sm:w-auto">
-          {quickRanges.map((range) => {
-            const active = filters.deliveryFrom === range.from && filters.deliveryTo === range.to
-            return (
-              <button
-                key={range.label}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onChange({ deliveryFrom: range.from, deliveryTo: range.to })}
-                className={cn(
-                  'flex-1 rounded-md px-3 py-1 text-sm font-medium transition-colors sm:flex-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
-                  active ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {range.label}
-              </button>
-            )
-          })}
-        </div>
+        <SegmentedControl
+          label="Fecha de entrega"
+          options={quickRanges}
+          value={activeRange?.value ?? null}
+          onChange={(value) => {
+            const range = quickRanges.find((r) => r.value === value)!
+            onChange({ deliveryFrom: range.from, deliveryTo: range.to })
+          }}
+          className="flex w-full sm:w-auto"
+        />
 
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
-          <div className="relative min-w-0 flex-1 sm:w-72">
-            <SearchIcon
-              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <Input
-              type="search"
-              placeholder="Nombre o teléfono"
-              aria-label="Buscar pedidos"
-              className="h-8 bg-card pl-8"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </div>
+          <SearchInput
+            label="Buscar pedidos"
+            placeholder="Nombre o teléfono"
+            className="min-w-0 flex-1 sm:w-72"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
           <Button
             variant={activeCount > 0 ? 'secondary' : 'outline'}
             className={cn('h-8', activeCount === 0 && 'bg-card')}
