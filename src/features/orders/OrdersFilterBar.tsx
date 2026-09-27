@@ -65,17 +65,16 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
 
   // How many of the tucked-away filters differ from the defaults, shown on the "Filtros" button
   const customDates = activeRange === undefined
-  const customStatuses =
-    filters.statuses.length !== DEFAULT_STATUSES.length ||
-    !DEFAULT_STATUSES.every((status) => filters.statuses.includes(status))
+  const customStatuses = filters.statuses.length > 0
   const activeCount = [customDates, customStatuses, filters.pendingPayment, filters.pendingRefund].filter(Boolean).length
   const [open, setOpen] = useState(false)
 
+  // From "Todos", a status shows only that one; choosing every status, or removing the last one, is "Todos" again
   const toggleStatus = (status: (typeof ORDER_STATUSES)[number]) => {
     const statuses = filters.statuses.includes(status)
       ? filters.statuses.filter((s) => s !== status)
       : [...filters.statuses, status]
-    onChange({ statuses })
+    onChange({ statuses: statuses.length === ORDER_STATUSES.length ? [] : statuses })
   }
 
   return (
@@ -173,6 +172,9 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Estado</legend>
             <div className="flex flex-wrap gap-1.5">
+              <FilterChip active={filters.statuses.length === 0} onClick={() => onChange({ statuses: [] })}>
+                Todos
+              </FilterChip>
               {ORDER_STATUSES.map((status) => (
                 <FilterChip
                   key={status}

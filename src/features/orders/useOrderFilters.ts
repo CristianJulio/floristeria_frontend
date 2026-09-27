@@ -2,8 +2,9 @@ import { useSearchParams } from 'react-router'
 import { todayInColombia } from '@/lib/dates'
 import { ORDER_STATUSES, type OrderStatus, type OrdersFilters } from './orders-api'
 
-// Without a status filter in the address, the list shows what's still to do
-export const DEFAULT_STATUSES: OrderStatus[] = ['PENDING', 'PREPARING', 'OUT_FOR_DELIVERY']
+// No statuses means "Todos" (the API then doesn't filter by status); it's the default,
+// so the address only carries ?estado= when specific statuses are chosen
+export const DEFAULT_STATUSES: OrderStatus[] = []
 
 function parseStatuses(value: string | null): OrderStatus[] {
   if (value === null) return DEFAULT_STATUSES
@@ -34,10 +35,7 @@ export function useOrderFilters() {
     const nextParams = new URLSearchParams()
     if (next.deliveryFrom !== today) nextParams.set('desde', next.deliveryFrom)
     if (next.deliveryTo !== today) nextParams.set('hasta', next.deliveryTo)
-    const isDefaultStatuses =
-      next.statuses.length === DEFAULT_STATUSES.length &&
-      DEFAULT_STATUSES.every((status) => next.statuses.includes(status))
-    if (!isDefaultStatuses) nextParams.set('estado', next.statuses.join(','))
+    if (next.statuses.length > 0) nextParams.set('estado', next.statuses.join(','))
     if (next.search) nextParams.set('buscar', next.search)
     if (next.pendingPayment) nextParams.set('pago', 'pendiente')
     if (next.pendingRefund) nextParams.set('reembolso', 'pendiente')
