@@ -14,6 +14,7 @@ import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
 import { fetchProducts, updateProduct, type Product } from './products-api'
 import { ProductFormDialog } from './ProductFormDialog'
+import { ProductPlaceholder } from './ProductPlaceholder'
 
 const AVAILABILITY_FILTERS = [
   { value: 'todos', label: 'Todos', available: undefined },
@@ -23,7 +24,7 @@ const AVAILABILITY_FILTERS = [
 
 function ProductImage({ product }: { product: Product }) {
   const [broken, setBroken] = useState(false)
-  if (!product.imageUrl || broken) return <div className="size-10 shrink-0 rounded-md bg-muted" aria-hidden />
+  if (!product.imageUrl || broken) return <ProductPlaceholder className="size-10 shrink-0" />
   return (
     <img
       src={product.imageUrl}
