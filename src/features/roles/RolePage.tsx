@@ -213,8 +213,9 @@ export function RolePage() {
     onError: (error) => setPermissionsError(apiErrorMessage(error)),
   })
 
-  const canEditData = isNew ? can('roles.create') : can('roles.update')
-  const canEditPermissions = isNew ? can('roles.create') : can('roles.update_permissions')
+  const isProtected = role?.isProtected ?? false
+  const canEditData = isNew ? can('roles.create') : can('roles.update') && !isProtected
+  const canEditPermissions = isNew ? can('roles.create') : can('roles.update_permissions') && !isProtected
 
   const back = (
     <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate('/roles')}>
@@ -243,6 +244,12 @@ export function RolePage() {
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
       {back}
       <h1 className="text-xl font-semibold">{isNew ? 'Nuevo rol' : role?.name}</h1>
+      {isProtected && (
+        <p className="text-sm text-muted-foreground">
+          Este rol es fijo: tiene todos los permisos y no se puede modificar ni eliminar. Siempre debe quedar al menos
+          un usuario con este rol.
+        </p>
+      )}
 
       <Card>
         <CardHeader>
@@ -315,7 +322,7 @@ export function RolePage() {
           {createMutation.isPending ? 'Creando rol…' : 'Crear rol'}
         </Button>
       ) : (
-        role && can('roles.delete') && <DeleteRoleButton role={role} />
+        role && !isProtected && can('roles.delete') && <DeleteRoleButton role={role} />
       )}
     </section>
   )

@@ -10,6 +10,8 @@ export type Role = {
   name: string
   description: string | null
   permissions: RolePermission[]
+  // The fixed role with every permission: it can't be changed or deleted
+  isProtected: boolean
 }
 
 export type Permission = {

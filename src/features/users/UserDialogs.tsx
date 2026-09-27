@@ -31,6 +31,11 @@ const passwordField = z.string().min(8, 'Mínimo 8 caracteres').max(72, 'Máximo
 const roleField = z.string().min(1, 'Elige un rol')
 
 function userErrorMessage(error: unknown) {
+  // e.g. "The last user with the Developer role can't lose it"
+  const lastProtected = error instanceof ApiError && error.status === 409 && error.message.match(/^The last user with the (.+) role/)
+  if (lastProtected) {
+    return `Es el último usuario con el rol ${lastProtected[1]} y no puede perderlo. Asigna ese rol a otra persona primero.`
+  }
   if (error instanceof ApiError && error.status === 409) return 'Ese nombre de usuario ya existe.'
   if (error instanceof ApiError && error.status === 400 && error.message === 'Role not found') {
     return 'El rol elegido ya no existe. Recarga la página.'

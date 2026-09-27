@@ -39,7 +39,10 @@ export function RolesPage() {
                 className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted"
               >
                 <div className="min-w-0">
-                  <div className="font-medium">{role.name}</div>
+                  <div className="font-medium">
+                    {role.name}
+                    {role.isProtected && <span className="ml-2 text-xs font-normal text-muted-foreground">(fijo)</span>}
+                  </div>
                   {role.description && <div className="truncate text-sm text-muted-foreground">{role.description}</div>}
                 </div>
                 <span className="shrink-0 text-sm text-muted-foreground">
