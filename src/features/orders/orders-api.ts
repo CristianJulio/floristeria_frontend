@@ -90,6 +90,15 @@ export async function fetchOrder(id: string) {
   return body.data
 }
 
+// A reason is required exactly when the new status is CANCELLED
+export async function changeOrderStatus(id: string, status: OrderStatus, cancellationReason?: string) {
+  const body = await apiFetch<{ data: Order }>(`/api/orders/${id}/status`, {
+    method: 'PATCH',
+    body: { status, ...(cancellationReason && { cancellationReason }) },
+  })
+  return body.data
+}
+
 export async function fetchOrders(filters: OrdersFilters) {
   return apiFetch<{ data: Order[]; pagination: Pagination }>('/api/orders', {
     query: {

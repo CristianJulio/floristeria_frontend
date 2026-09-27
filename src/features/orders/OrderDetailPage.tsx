@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ApiError } from '@/lib/api-client'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
+import { OrderStatusActions } from './OrderStatusActions'
 import { OrderStatusBadge } from './OrderStatusBadge'
 import { fetchOrder, type Order } from './orders-api'
 
@@ -164,14 +165,17 @@ export function OrderDetailPage() {
     <section className="flex flex-col gap-4">
       {backButton}
 
-      <header className="flex flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold">{order.recipientName}</h1>
-          <OrderStatusBadge status={order.status} />
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl font-semibold">{order.recipientName}</h1>
+            <OrderStatusBadge status={order.status} />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Entrega: {formatDeliveryDay(order.deliveryDate)} · {formatDeliveryTime(order)}
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Entrega: {formatDeliveryDay(order.deliveryDate)} · {formatDeliveryTime(order)}
-        </p>
+        <OrderStatusActions order={order} />
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
