@@ -99,6 +99,27 @@ export async function changeOrderStatus(id: string, status: OrderStatus, cancell
   return body.data
 }
 
+export type CreateOrderInput = {
+  senderName: string
+  recipientName: string
+  addressLine1: string
+  addressLine2?: string
+  neighborhood?: string
+  city: string
+  deliveryNotes?: string
+  cardMessage?: string
+  responsiblePhone: string
+  deliveryDate: string
+  deliveryTimeFrom?: string
+  deliveryTimeTo?: string
+  items: { productId: string; quantity: number }[]
+}
+
+export async function createOrder(input: CreateOrderInput) {
+  const body = await apiFetch<{ data: Order }>('/api/orders', { method: 'POST', body: input })
+  return body.data
+}
+
 export type RecordPaymentInput = {
   type: PaymentType
   amount: number

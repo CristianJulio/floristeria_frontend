@@ -1,4 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
+import { useAuth } from '@/features/auth/auth-context'
 import { Button } from '@/components/ui/button'
 import { PaginationControls } from '@/components/PaginationControls'
 import { todayInColombia } from '@/lib/dates'
@@ -10,6 +12,7 @@ import { useOrderFilters } from './useOrderFilters'
 // The home page: today's deliveries by default, with every filter kept in the address
 export function OrdersListPage() {
   const { filters, setFilters } = useOrderFilters()
+  const { can } = useAuth()
   const today = todayInColombia()
   const isToday = filters.deliveryFrom === today && filters.deliveryTo === today
 
@@ -22,7 +25,14 @@ export function OrdersListPage() {
 
   return (
     <section className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">{isToday ? 'Entregas de hoy' : 'Pedidos'}</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-lg font-semibold">{isToday ? 'Entregas de hoy' : 'Pedidos'}</h1>
+        {can('orders.create') && (
+          <Button nativeButton={false} render={<Link to="/pedidos/nuevo" />}>
+            Nuevo pedido
+          </Button>
+        )}
+      </div>
 
       <OrdersFilterBar filters={filters} onChange={setFilters} />
 
