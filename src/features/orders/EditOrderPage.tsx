@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/features/auth/auth-context'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
@@ -17,6 +18,8 @@ import {
 import { fetchOrder, updateOrderDetails, type Order } from './orders-api'
 import { OrderDetailsFields } from './OrderDetailsFields'
 import { isOrderEditable } from './order-rules'
+import { formatMoney } from './order-format'
+import { OrderStatusBadge } from './OrderStatusBadge'
 
 function EditOrderForm({ order }: { order: Order }) {
   const navigate = useNavigate()
@@ -68,30 +71,75 @@ function EditOrderForm({ order }: { order: Order }) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-        <OrderDetailsFields minDeliveryDate={minDeliveryDate} />
+      {/* Same layout as the new order form: details on the left; on computers, a summary with the
+          save buttons on the right that stays in view while scrolling */}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start"
+      >
+        <div className="flex flex-col gap-4">
+          <OrderDetailsFields minDeliveryDate={minDeliveryDate} />
+        </div>
 
-        {submitError && (
-          <p role="alert" className="text-sm text-destructive">
-            {submitError}
-          </p>
-        )}
-        {Object.keys(errors).length > 0 && !submitError && (
-          <p role="alert" className="text-sm text-destructive">
-            Revisa los campos marcados.
-          </p>
-        )}
+        <div className="flex flex-col gap-4 lg:sticky lg:top-4">
+          <OrderSummaryCard order={order} />
 
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="lg" onClick={() => navigate(-1)} disabled={mutation.isPending}>
-            Descartar
-          </Button>
-          <Button type="submit" size="lg" className="flex-1" disabled={mutation.isPending}>
-            {mutation.isPending ? 'Guardando…' : 'Guardar cambios'}
-          </Button>
+          {submitError && (
+            <p role="alert" className="text-sm text-destructive">
+              {submitError}
+            </p>
+          )}
+          {Object.keys(errors).length > 0 && !submitError && (
+            <p role="alert" className="text-sm text-destructive">
+              Revisa los campos marcados.
+            </p>
+          )}
+
+          <div className="flex gap-2 lg:flex-col-reverse">
+            <Button type="button" variant="outline" size="lg" onClick={() => navigate(-1)} disabled={mutation.isPending}>
+              Descartar
+            </Button>
+            <Button type="submit" size="lg" className="flex-1 lg:flex-none" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Guardando…' : 'Guardar cambios'}
+            </Button>
+          </div>
         </div>
       </form>
     </FormProvider>
+  )
+}
+
+// What this page doesn't change, for reference while editing: status, products and total
+function OrderSummaryCard({ order }: { order: Order }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between gap-2">
+          Pedido
+          <OrderStatusBadge status={order.status} />
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <ul className="text-sm">
+          {order.items.map((item) => (
+            <li key={item.productId} className="flex justify-between gap-2 border-b py-2 last:border-b-0">
+              <span>
+                {item.quantity}× {item.productName}
+              </span>
+              <span className="tabular-nums">{formatMoney(item.price * item.quantity)}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="flex items-baseline justify-between border-t pt-3">
+          <span className="font-medium">Total</span>
+          <span className="text-xl font-semibold tabular-nums">{formatMoney(order.balance.total)}</span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Los productos y los pagos se cambian desde la página del pedido.
+        </p>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -127,7 +175,7 @@ export function EditOrderPage() {
   }
 
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <section className="mx-auto flex w-full max-w-5xl flex-col gap-4">
       <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate(-1)}>
         ← Volver
       </Button>
