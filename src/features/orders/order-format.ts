@@ -31,10 +31,10 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
 
 export const STATUS_CLASSES: Record<OrderStatus, string> = {
   PENDING: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100',
-  PREPARING: 'bg-blue-100 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100',
-  OUT_FOR_DELIVERY: 'bg-violet-100 text-violet-900 dark:bg-violet-900/40 dark:text-violet-100',
+  PREPARING: 'bg-petal text-petal-foreground',
+  OUT_FOR_DELIVERY: 'bg-blue-100 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100',
   DELIVERED: 'bg-green-100 text-green-900 dark:bg-green-900/40 dark:text-green-100',
-  CANCELLED: 'bg-muted text-muted-foreground line-through',
+  CANCELLED: 'bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100',
 }
 
 import { formatMoney } from '@/lib/money'

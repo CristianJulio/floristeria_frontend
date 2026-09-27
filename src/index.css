@@ -25,6 +25,8 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-petal-foreground: var(--petal-foreground);
+    --color-petal: var(--petal);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
@@ -49,38 +51,41 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    /* "Tallo" palette: leaf green with petal pink, on a slightly green-tinted white */
+    --background: #f4f6f3;
+    --foreground: #1d2a22;
+    --card: #ffffff;
+    --card-foreground: #1d2a22;
+    --popover: #ffffff;
+    --popover-foreground: #1d2a22;
+    --primary: #2f6b4f;
+    --primary-foreground: #ffffff;
+    --secondary: #e1ede5;
+    --secondary-foreground: #214d38;
+    --muted: #eaefe9;
+    --muted-foreground: #5f6f64;
+    --accent: #e1ede5;
+    --accent-foreground: #214d38;
+    --petal: #f7e1e8;
+    --petal-foreground: #9b3f5c;
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --border: #dde4dd;
+    --input: #cfd9d0;
+    --ring: #2f6b4f;
+    --chart-1: #2f6b4f;
+    --chart-2: #9b3f5c;
+    --chart-3: #6f9a80;
+    --chart-4: #d99aae;
+    --chart-5: #214d38;
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: #ffffff;
+    --sidebar-foreground: #1d2a22;
+    --sidebar-primary: #2f6b4f;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e1ede5;
+    --sidebar-accent-foreground: #214d38;
+    --sidebar-border: #dde4dd;
+    --sidebar-ring: #2f6b4f;
 }
 
 .dark {

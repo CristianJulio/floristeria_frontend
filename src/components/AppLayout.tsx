@@ -18,9 +18,9 @@ export function AppLayout() {
 
   return (
     <div className="min-h-svh">
-      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b px-4 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b bg-card px-4 py-3">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="font-semibold">Floristería</span>
+          <span className="font-semibold text-primary">Floristería</span>
           <nav className="flex gap-1 overflow-x-auto" aria-label="Secciones">
             {sections.map((section) => (
               <NavLink
@@ -29,7 +29,7 @@ export function AppLayout() {
                 end={section.end}
                 className={({ isActive }) =>
                   `rounded-md px-2.5 py-1 text-sm whitespace-nowrap transition-colors ${
-                    isActive ? 'bg-muted font-medium' : 'text-muted-foreground hover:text-foreground'
+                    isActive ? 'bg-secondary font-medium text-secondary-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`
                 }
               >
