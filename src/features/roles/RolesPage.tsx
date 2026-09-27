@@ -11,7 +11,7 @@ export function RolesPage() {
   const { data: roles, isPending, isError, refetch } = useQuery({ queryKey: ['roles'], queryFn: fetchRoles })
 
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-col gap-0.5">
           <h1 className="text-xl font-semibold">Roles</h1>

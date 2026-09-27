@@ -44,16 +44,27 @@ export function PermissionsChecklist({ permissions, selectedIds, onChange, disab
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    // Each group is a small panel; two columns on computers so the page stays short
+    <div className="grid gap-3 md:grid-cols-2 md:items-start">
       {groups
         .filter((group) => group.items.length > 0)
         .map((group) => {
           const ids = group.items.map((item) => item.id)
-          const allSelected = ids.every((id) => selectedIds.has(id))
+          const selectedCount = ids.filter((id) => selectedIds.has(id)).length
+          const allSelected = selectedCount === ids.length
           return (
-            <fieldset key={group.title} className="flex flex-col gap-2" disabled={disabled}>
-              <div className="flex items-center justify-between gap-2">
-                <legend className="font-medium">{group.title}</legend>
+            <fieldset key={group.title} className="flex flex-col gap-1 rounded-lg border p-3" disabled={disabled}>
+              <legend className="sr-only">{group.title}</legend>
+              <div className="flex items-center justify-between gap-2 pb-1">
+                <span className="flex items-baseline gap-2">
+                  {/* The name is already announced by the legend */}
+                  <span className="font-medium" aria-hidden>
+                    {group.title}
+                  </span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {selectedCount} de {ids.length}
+                  </span>
+                </span>
                 {!disabled && (
                   <Button type="button" size="xs" variant="ghost" onClick={() => setGroup(ids, !allSelected)}>
                     {allSelected ? 'Quitar todo' : 'Seleccionar todo'}
@@ -61,10 +72,13 @@ export function PermissionsChecklist({ permissions, selectedIds, onChange, disab
                 )}
               </div>
               {group.items.map((item) => (
-                <label key={item.id} className="flex items-start gap-2 text-sm has-disabled:opacity-70">
+                <label
+                  key={item.id}
+                  className="-mx-1.5 flex items-start gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-muted has-disabled:opacity-70 has-disabled:hover:bg-transparent"
+                >
                   <input
                     type="checkbox"
-                    className="mt-0.5 size-4 accent-primary"
+                    className="mt-0.5 size-4 shrink-0 accent-primary"
                     checked={selectedIds.has(item.id)}
                     onChange={() => toggle(item.id)}
                   />

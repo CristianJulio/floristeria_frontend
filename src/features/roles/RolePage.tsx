@@ -241,7 +241,7 @@ export function RolePage() {
   }
 
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-4">
       {back}
       <h1 className="text-xl font-semibold">{isNew ? 'Nuevo rol' : role?.name}</h1>
       {isProtected && (
