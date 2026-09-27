@@ -1,10 +1,10 @@
 import { createContext, useContext } from 'react'
-import type { User } from './auth-api'
+import type { User, UserRole } from './auth-api'
 
 export type AuthState =
   | { status: 'loading' }
   | { status: 'anonymous'; sessionExpired: boolean }
-  | { status: 'authenticated'; user: User; permissions: string[] }
+  | { status: 'authenticated'; user: User; role: UserRole | null; permissions: string[] }
 
 export type AuthContextValue = {
   state: AuthState

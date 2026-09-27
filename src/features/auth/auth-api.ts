@@ -9,8 +9,11 @@ export type User = {
   isActive: boolean
 }
 
+export type UserRole = { id: string; name: string }
+
 export type Me = {
   user: User
+  role: UserRole | null
   permissions: string[]
 }
 

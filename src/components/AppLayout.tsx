@@ -1,9 +1,19 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { cn } from 'cn'
-import { MenuIcon } from 'lucide-react'
+import { ChevronDownIcon, LogOutIcon, MenuIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { UserBadge } from '@/components/UserBadge'
 import { useAuth } from '@/features/auth/auth-context'
 
 // Each section only appears for users allowed to read it
@@ -21,6 +31,7 @@ const SHOP_NAME_CLASS = 'font-caps tracking-[0.16em] whitespace-nowrap text-prim
 export function AppLayout() {
   const { state, logout, can } = useAuth()
   const user = state.status === 'authenticated' ? state.user : null
+  const role = state.status === 'authenticated' ? state.role : null
   const sections = SECTIONS.filter((section) => can(section.permission))
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -72,12 +83,9 @@ export function AppLayout() {
                   {links(true)}
                 </nav>
                 <div className="mt-auto flex flex-col gap-3 border-t p-4">
-                  {user && (
-                    <span className="text-sm text-muted-foreground">
-                      {user.name} {user.lastName}
-                    </span>
-                  )}
+                  {user && <UserBadge user={user} role={role} />}
                   <Button variant="outline" onClick={logout}>
+                    <LogOutIcon aria-hidden />
                     Cerrar sesión
                   </Button>
                 </div>
@@ -90,16 +98,29 @@ export function AppLayout() {
             {links(false)}
           </nav>
 
-          <div className="hidden items-center gap-3 justify-self-end lg:flex">
-            {user && (
-              <span className="text-sm text-muted-foreground">
-                {user.name} {user.lastName}
-              </span>
-            )}
-            <Button variant="outline" size="sm" onClick={logout}>
-              Cerrar sesión
-            </Button>
-          </div>
+          {/* Who is logged in; clicking opens a small menu with "Cerrar sesión" */}
+          {user && (
+            <div className="hidden justify-self-end lg:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
+                >
+                  <UserBadge user={user} role={role} />
+                  <ChevronDownIcon className="size-4 text-muted-foreground" aria-hidden />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-48">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Usuario: {user.username}</DropdownMenuLabel>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOutIcon aria-hidden />
+                    Cerrar sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </header>
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
