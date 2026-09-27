@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import {
@@ -28,7 +28,8 @@ const CANCELLABLE: OrderStatus[] = ['PENDING', 'PREPARING']
 
 type DialogMode = 'advance' | 'cancel' | null
 
-export function OrderStatusActions({ order }: { order: Order }) {
+// `middle` (e.g. the edit button) is placed between cancel and the next step, so the main action stays last
+export function OrderStatusActions({ order, middle }: { order: Order; middle?: ReactNode }) {
   const { can } = useAuth()
   const queryClient = useQueryClient()
   const [dialog, setDialog] = useState<DialogMode>(null)
@@ -54,7 +55,9 @@ export function OrderStatusActions({ order }: { order: Order }) {
 
   const nextStep = NEXT_STEP[order.status]
   const canCancel = CANCELLABLE.includes(order.status)
-  if (!can('orders.update_status') || (!nextStep && !canCancel)) return null
+  if (!can('orders.update_status') || (!nextStep && !canCancel)) {
+    return middle ? <div className="flex flex-wrap gap-2">{middle}</div> : null
+  }
 
   function openDialog(mode: DialogMode) {
     setError(null)
@@ -71,13 +74,18 @@ export function OrderStatusActions({ order }: { order: Order }) {
   const trimmedReason = reason.trim()
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {nextStep && <Button onClick={() => openDialog('advance')}>{nextStep.label}</Button>}
+    <div className="flex flex-wrap items-center gap-2">
       {canCancel && (
-        <Button variant="outline" onClick={() => openDialog('cancel')}>
+        <Button
+          variant="ghost"
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => openDialog('cancel')}
+        >
           Cancelar pedido
         </Button>
       )}
+      {middle}
+      {nextStep && <Button onClick={() => openDialog('advance')}>{nextStep.label}</Button>}
 
       <Dialog open={dialog !== null} onOpenChange={(open) => !open && !mutation.isPending && closeDialog()}>
         <DialogContent>

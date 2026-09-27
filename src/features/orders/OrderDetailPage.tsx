@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/auth-context'
 import { ChangeItemsDialog } from './ChangeItemsDialog'
 import { areItemsEditable, isOrderEditable } from './order-rules'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ApiError } from '@/lib/api-client'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
@@ -58,8 +58,11 @@ function CardMessageCard({ order }: { order: Order }) {
       </CardHeader>
       <CardContent>
         {order.cardMessage ? (
-          // Shown exactly as written, line breaks included, since it has to be copied onto the card
-          <p className="rounded-md bg-muted p-3 text-base whitespace-pre-wrap">{order.cardMessage}</p>
+          // Shown exactly as written, line breaks included, since it has to be copied onto the card.
+          // Styled like the gift card itself: white, with a soft petal border
+          <p className="rounded-lg border border-petal-foreground/25 bg-white p-4 text-base leading-relaxed whitespace-pre-wrap text-foreground shadow-sm ring-4 ring-petal/60">
+            {order.cardMessage}
+          </p>
         ) : (
           <p className="text-sm text-muted-foreground">Sin mensaje.</p>
         )}
@@ -77,11 +80,11 @@ function ItemsCard({ order }: { order: Order }) {
       <CardHeader>
         <CardTitle>Productos</CardTitle>
         {can('orders.update_items') && areItemsEditable(order) && (
-          <div className="pt-2">
+          <CardAction>
             <Button size="sm" variant="outline" onClick={() => setChanging(true)}>
               Cambiar productos
             </Button>
-          </div>
+          </CardAction>
         )}
       </CardHeader>
       {changing && <ChangeItemsDialog order={order} onClose={() => setChanging(false)} />}
@@ -93,39 +96,28 @@ function ItemsCard({ order }: { order: Order }) {
                 {item.quantity}× {item.productName}
                 <span className="text-muted-foreground"> · {formatMoney(item.price)} c/u</span>
               </span>
-              <span>{formatMoney(item.price * item.quantity)}</span>
+              <span className="tabular-nums">{formatMoney(item.price * item.quantity)}</span>
             </li>
           ))}
         </ul>
         <div className="mt-2 flex justify-between border-t pt-2 font-semibold">
           <span>Total</span>
-          <span>{formatMoney(order.balance.total)}</span>
+          <span className="tabular-nums">{formatMoney(order.balance.total)}</span>
         </div>
       </CardContent>
     </Card>
   )
 }
 
-function RecordCard({ order }: { order: Order }) {
+// Who created and last changed the order: a quiet line at the bottom of the page
+function RecordLine({ order }: { order: Order }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Registro</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <dl className="flex flex-col gap-3 text-sm">
-          <Field label="Creado">
-            {formatDateTime(order.createdAt)} por {order.createdBy.username}
-          </Field>
-          {order.updatedAt && order.updatedBy && (
-            <Field label="Último cambio">
-              {formatDateTime(order.updatedAt)} por {order.updatedBy.username}
-            </Field>
-          )}
-          {order.cancellationReason && <Field label="Motivo de cancelación">{order.cancellationReason}</Field>}
-        </dl>
-      </CardContent>
-    </Card>
+    <p className="text-xs text-muted-foreground">
+      Creado el {formatDateTime(order.createdAt)} por {order.createdBy.username}
+      {order.updatedAt && order.updatedBy && (
+        <> · Último cambio el {formatDateTime(order.updatedAt)} por {order.updatedBy.username}</>
+      )}
+    </p>
   )
 }
 
@@ -176,6 +168,12 @@ export function OrderDetailPage() {
     )
   }
 
+  const editButton = can('orders.update') && isOrderEditable(order) && (
+    <Button variant="outline" nativeButton={false} render={<Link to={`/pedidos/${order.id}/editar`} />}>
+      Editar datos
+    </Button>
+  )
+
   return (
     <section className="flex flex-col gap-4">
       {backButton}
@@ -187,30 +185,41 @@ export function OrderDetailPage() {
             <OrderStatusBadge status={order.status} />
           </div>
           <p className="text-sm text-muted-foreground">
-            Entrega: {formatDeliveryDay(order.deliveryDate)} · {formatDeliveryTime(order)}
+            Entrega {formatDeliveryDay(order.deliveryDate)} ·{' '}
+            <span className="font-medium text-foreground tabular-nums">{formatDeliveryTime(order)}</span>
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {can('orders.update') && isOrderEditable(order) && (
-            <Button variant="outline" nativeButton={false} render={<Link to={`/pedidos/${order.id}/editar`} />}>
-              Editar datos
-            </Button>
-          )}
-          <OrderStatusActions order={order} />
-        </div>
+        <OrderStatusActions order={order} middle={editButton} />
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <DeliveryCard order={order} />
-          <CardMessageCard order={order} />
-          <RecordCard order={order} />
+      {order.cancellationReason && (
+        <p role="note" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+          <span className="font-medium">Motivo de la cancelación:</span> {order.cancellationReason}
+        </p>
+      )}
+
+      {/* Two columns on computers (delivery and card | products and payments). On phones the column
+          wrappers dissolve so the cards can follow their own order: delivery, products, payments, card */}
+      <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-start">
+        <div className="contents md:flex md:flex-col md:gap-4">
+          <div className="order-1 md:order-none">
+            <DeliveryCard order={order} />
+          </div>
+          <div className="order-4 md:order-none">
+            <CardMessageCard order={order} />
+          </div>
         </div>
-        <div className="flex flex-col gap-4">
-          <ItemsCard order={order} />
-          <OrderPaymentsCard order={order} />
+        <div className="contents md:flex md:flex-col md:gap-4">
+          <div className="order-2 md:order-none">
+            <ItemsCard order={order} />
+          </div>
+          <div className="order-3 md:order-none">
+            <OrderPaymentsCard order={order} />
+          </div>
         </div>
       </div>
+
+      <RecordLine order={order} />
     </section>
   )
 }

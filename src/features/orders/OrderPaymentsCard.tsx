@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/features/auth/auth-context'
 import { RecordPaymentDialog } from './RecordPaymentDialog'
 import { VoidPaymentDialog } from './VoidPaymentDialog'
@@ -12,11 +13,28 @@ import {
 } from './order-format'
 import type { Order, OrderPayment, PaymentType } from './orders-api'
 
-function BalanceRow({ label, amount, className }: { label: string; amount: number; className?: string }) {
+function BalanceRow({ label, amount }: { label: string; amount: number }) {
   return (
-    <div className={`flex justify-between ${className ?? ''}`}>
-      <dt>{label}</dt>
-      <dd>{formatMoney(amount)}</dd>
+    <div className="flex justify-between">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="tabular-nums">{formatMoney(amount)}</dd>
+    </div>
+  )
+}
+
+// The one thing staff need to know first: what's still owed either way, or that it's settled
+function BalanceSummary({ balance }: { balance: Order['balance'] }) {
+  const [label, amount, tone] =
+    balance.pendingPayment > 0
+      ? ['Falta por pagar', balance.pendingPayment, 'border-amber-200 bg-amber-50 text-amber-900']
+      : balance.pendingRefund > 0
+        ? ['Falta por reembolsar', balance.pendingRefund, 'border-red-200 bg-red-50 text-red-900']
+        : ['Al día', null, 'border-green-200 bg-green-50 text-green-900']
+
+  return (
+    <div className={cn('flex items-baseline justify-between gap-3 rounded-lg border px-4 py-3', tone)}>
+      <span className="font-medium">{label}</span>
+      {amount !== null && <span className="text-2xl font-semibold tabular-nums">{formatMoney(amount)}</span>}
     </div>
   )
 }
@@ -32,7 +50,7 @@ function PaymentEntry({ payment, onVoid }: { payment: OrderPayment; onVoid?: () 
         <span className={voided ? 'line-through' : 'font-medium'}>
           {PAYMENT_TYPE_LABELS[payment.type]} · {PAYMENT_METHOD_LABELS[payment.method]}
         </span>
-        <span className={voided ? 'line-through' : ''}>
+        <span className={cn('tabular-nums', voided && 'line-through')}>
           {sign}
           {formatMoney(payment.amount)}
         </span>
@@ -83,7 +101,7 @@ export function OrderPaymentsCard({ order }: { order: Order }) {
       <CardHeader>
         <CardTitle>Pagos</CardTitle>
         {actions.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-2">
+          <CardAction className="flex flex-wrap justify-end gap-2">
             {actions.map((action, index) => (
               <Button
                 key={action.type}
@@ -94,38 +112,22 @@ export function OrderPaymentsCard({ order }: { order: Order }) {
                 {action.label}
               </Button>
             ))}
-          </div>
+          </CardAction>
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        <BalanceSummary balance={balance} />
         <dl className="flex flex-col gap-1 text-sm">
           <BalanceRow label="Total del pedido" amount={balance.total} />
           <BalanceRow label="Pagado" amount={balance.paid} />
           {balance.refunded > 0 && <BalanceRow label="Reembolsado" amount={balance.refunded} />}
           {balance.retained > 0 && <BalanceRow label="Retenido" amount={balance.retained} />}
-          {balance.pendingPayment > 0 && (
-            <BalanceRow
-              label="Pendiente por pagar"
-              amount={balance.pendingPayment}
-              className="font-semibold text-amber-700 dark:text-amber-400"
-            />
-          )}
-          {balance.pendingRefund > 0 && (
-            <BalanceRow
-              label="Pendiente por reembolsar"
-              amount={balance.pendingRefund}
-              className="font-semibold text-destructive"
-            />
-          )}
-          {balance.pendingPayment === 0 && balance.pendingRefund === 0 && (
-            <div className="font-semibold text-green-700 dark:text-green-400">Al día</div>
-          )}
         </dl>
 
         {order.payments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Aún no hay pagos registrados.</p>
+          <p className="border-t pt-3 text-sm text-muted-foreground">Aún no hay pagos registrados.</p>
         ) : (
-          <ul className="text-sm">
+          <ul className="border-t text-sm">
             {order.payments.map((payment) => (
               <PaymentEntry
                 key={payment.id}

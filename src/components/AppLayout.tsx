@@ -1,10 +1,11 @@
-import { NavLink, Outlet } from 'react-router'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/auth-context'
 
 // Each section only appears for users allowed to read it
 const SECTIONS = [
-  { to: '/', label: 'Pedidos', permission: 'orders.read', end: true },
+  // The orders list lives at '/', but its pages (new, detail, edit) are under /pedidos
+  { to: '/', label: 'Pedidos', permission: 'orders.read', end: true, alsoActiveUnder: '/pedidos' },
   { to: '/productos', label: 'Productos', permission: 'products.read', end: false },
   { to: '/usuarios', label: 'Usuarios', permission: 'users.read', end: false },
   { to: '/roles', label: 'Roles', permission: 'roles.read', end: false },
@@ -15,6 +16,7 @@ export function AppLayout() {
   const { state, logout, can } = useAuth()
   const user = state.status === 'authenticated' ? state.user : null
   const sections = SECTIONS.filter((section) => can(section.permission))
+  const { pathname } = useLocation()
 
   return (
     <div className="min-h-svh">
@@ -32,11 +34,13 @@ export function AppLayout() {
                   key={section.to}
                   to={section.to}
                   end={section.end}
-                  className={({ isActive }) =>
-                    `rounded-md px-2.5 py-1 text-sm whitespace-nowrap transition-colors ${
+                  className={({ isActive: matched }) => {
+                    const isActive =
+                      matched || ('alsoActiveUnder' in section && pathname.startsWith(`${section.alsoActiveUnder}/`))
+                    return `rounded-md px-2.5 py-1 text-sm whitespace-nowrap transition-colors ${
                       isActive ? 'bg-secondary font-medium text-secondary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`
-                  }
+                  }}
                 >
                   {section.label}
                 </NavLink>
