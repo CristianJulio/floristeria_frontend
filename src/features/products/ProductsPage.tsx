@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PaginationControls } from '@/components/PaginationControls'
 import { SearchInput } from '@/components/SearchInput'
 import { SegmentedControl } from '@/components/SegmentedControl'
+import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
@@ -131,7 +132,7 @@ export function ProductsPage() {
       </div>
 
       {isPending ? (
-        <p className="text-sm text-muted-foreground">Cargando productos…</p>
+        <LoadingState label="Cargando productos…" />
       ) : isError ? (
         <div className="flex items-center gap-3 text-sm">
           <span className="text-destructive">No se pudieron cargar los productos.</span>

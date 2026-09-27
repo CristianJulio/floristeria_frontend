@@ -6,6 +6,7 @@ import { ChangeItemsDialog } from './ChangeItemsDialog'
 import { areItemsEditable, isOrderEditable } from './order-rules'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingState } from '@/components/LoadingState'
 import { ApiError } from '@/lib/api-client'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
@@ -144,7 +145,7 @@ export function OrderDetailPage() {
     return (
       <section className="flex flex-col gap-2">
         {backButton}
-        <p className="text-sm text-muted-foreground">Cargando pedido…</p>
+        <LoadingState label="Cargando pedido…" />
       </section>
     )
   }

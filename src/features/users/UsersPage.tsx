@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { fetchRoles } from '@/features/roles/roles-api'
 import { fetchUsers, type User, type UserStatus } from './users-api'
@@ -112,7 +113,7 @@ export function UsersPage() {
       )}
 
       {usersQuery.isPending ? (
-        <p className="text-sm text-muted-foreground">Cargando usuarios…</p>
+        <LoadingState label="Cargando usuarios…" />
       ) : usersQuery.isError ? (
         <div className="flex items-center gap-3 text-sm">
           <span className="text-destructive">No se pudieron cargar los usuarios.</span>

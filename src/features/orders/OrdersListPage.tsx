@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/auth-context'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/EmptyState'
 import { PaginationControls } from '@/components/PaginationControls'
+import { LoadingState } from '@/components/LoadingState'
 import { todayInColombia } from '@/lib/dates'
 import { OrdersFilterBar } from './OrdersFilterBar'
 import { OrdersList } from './OrdersList'
@@ -52,7 +53,7 @@ export function OrdersListPage() {
       <OrdersFilterBar filters={filters} onChange={setFilters} />
 
       {isPending ? (
-        <p className="text-sm text-muted-foreground">Cargando pedidos…</p>
+        <LoadingState label="Cargando pedidos…" />
       ) : isError ? (
         <div className="flex items-center gap-3 text-sm">
           <span className="text-destructive">No se pudieron cargar los pedidos.</span>

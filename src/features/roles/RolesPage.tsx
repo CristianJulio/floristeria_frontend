@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { ChevronRightIcon, ShieldIcon } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
+import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { fetchRoles } from './roles-api'
 
@@ -29,7 +30,7 @@ export function RolesPage() {
       </div>
 
       {isPending ? (
-        <p className="text-sm text-muted-foreground">Cargando roles…</p>
+        <LoadingState label="Cargando roles…" />
       ) : isError ? (
         <div className="flex items-center gap-3 text-sm">
           <span className="text-destructive">No se pudieron cargar los roles.</span>

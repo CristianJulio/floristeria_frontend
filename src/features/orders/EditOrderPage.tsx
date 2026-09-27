@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
@@ -156,7 +157,7 @@ export function EditOrderPage() {
 
   let content
   if (isPending) {
-    content = <p className="text-sm text-muted-foreground">Cargando pedido…</p>
+    content = <LoadingState label="Cargando pedido…" />
   } else if (isError) {
     content = (
       <div className="flex items-center gap-3 text-sm">

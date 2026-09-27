@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
@@ -227,7 +228,7 @@ export function RolePage() {
     return (
       <section className="flex flex-col gap-2">
         {back}
-        <p className="text-sm text-muted-foreground">Cargando rol…</p>
+        <LoadingState label="Cargando rol…" />
       </section>
     )
   }
@@ -279,7 +280,7 @@ export function RolePage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {permissionsQuery.isPending ? (
-            <p className="text-sm text-muted-foreground">Cargando permisos…</p>
+            <LoadingState label="Cargando permisos…" inline />
           ) : permissionsQuery.isError ? (
             <p className="text-sm text-destructive">{apiErrorMessage(permissionsQuery.error)}</p>
           ) : (

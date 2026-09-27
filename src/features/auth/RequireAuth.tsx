@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
+import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from './auth-context'
 import type { LoginLocationState } from './LoginPage'
 
@@ -9,8 +10,10 @@ export function RequireAuth() {
 
   if (state.status === 'loading') {
     return (
-      <div className="flex min-h-svh items-center justify-center text-sm text-muted-foreground">
-        Cargando…
+      // Shown while the session is being checked on first load
+      <div className="flex min-h-svh flex-col items-center justify-center gap-3">
+        <span className="font-caps tracking-[0.16em] text-primary uppercase">Floristería Barranquilla</span>
+        <LoadingState label="Cargando…" inline />
       </div>
     )
   }

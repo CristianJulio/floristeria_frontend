@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
+import { LoadingState } from '@/components/LoadingState'
 import {
   Dialog,
   DialogContent,
@@ -97,7 +98,7 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
         </DialogHeader>
 
         {loading ? (
-          <p className="text-sm text-muted-foreground">Cargando precios actuales…</p>
+          <LoadingState label="Cargando precios actuales…" inline />
         ) : loadFailed ? (
           <p className="text-sm text-destructive">No se pudieron cargar los precios actuales. Inténtalo de nuevo.</p>
         ) : (
