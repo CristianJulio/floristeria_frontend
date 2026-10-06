@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { CheckIcon, CopyIcon } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useAuth } from '@/features/auth/auth-context'
 import { ChangeItemsDialog } from './ChangeItemsDialog'
@@ -51,17 +52,52 @@ function DeliveryCard({ order }: { order: Order }) {
   )
 }
 
+// Cards are printed, so the message is copied as is (line breaks included) to paste into the print file
+function CopyMessageButton({ message }: { message: string }) {
+  const [result, setResult] = useState<'copied' | 'failed' | null>(null)
+
+  // The confirmation goes back to "Copiar" after a moment
+  useEffect(() => {
+    if (!result) return
+    const timer = setTimeout(() => setResult(null), 2000)
+    return () => clearTimeout(timer)
+  }, [result])
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(message)
+      setResult('copied')
+    } catch {
+      setResult('failed')
+    }
+  }
+
+  return (
+    <Button size="sm" variant="outline" onClick={copy}>
+      {result === 'copied' ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+      <span aria-live="polite">
+        {result === 'copied' ? 'Copiado' : result === 'failed' ? 'No se pudo copiar' : 'Copiar'}
+      </span>
+    </Button>
+  )
+}
+
 function CardMessageCard({ order }: { order: Order }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Tarjeta</CardTitle>
+        {order.cardMessage && (
+          <CardAction>
+            <CopyMessageButton message={order.cardMessage} />
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         {order.cardMessage ? (
-          // Shown exactly as written, line breaks included, since it has to be copied onto the card.
-          // Styled like the gift card itself: white, with a soft petal border
-          <p className="rounded-lg border border-petal-foreground/25 bg-white p-4 text-base leading-relaxed whitespace-pre-wrap text-foreground shadow-sm ring-4 ring-petal/60">
+          // Shown exactly as written, line breaks included, since it's printed on the card as is.
+          // A soft background and the theme's border set it apart from the order's other details
+          <p className="rounded-lg border bg-muted/60 p-4 text-base leading-relaxed whitespace-pre-wrap">
             {order.cardMessage}
           </p>
         ) : (

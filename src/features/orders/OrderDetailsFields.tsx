@@ -214,13 +214,14 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
         </CardHeader>
         <CardContent>
           <FormField id="cardMessage" label="Mensaje (opcional)" error={errors.cardMessage?.message}>
-            {/* Same gift-card look as on the order page */}
+            {/* A plain field like the rest of the form; the gift-card look is for the order page, which
+                shows the finished message. min-h-32 leaves room for a few lines before it starts growing */}
             <Textarea
               id="cardMessage"
               rows={5}
               maxLength={255}
               placeholder="Escribe el mensaje tal como va en la tarjeta"
-              className="min-h-32 border-petal-foreground/25 bg-white text-base leading-relaxed shadow-sm ring-4 ring-petal/60 md:text-base"
+              className="min-h-32"
               {...register('cardMessage')}
             />
             <span className="self-end text-xs text-muted-foreground tabular-nums">{cardMessage.length}/255</span>
