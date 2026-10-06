@@ -9,6 +9,7 @@ export const PERMISSION_GROUPS: { title: string; permissions: { name: string; la
       { name: 'orders.update', label: 'Editar datos del pedido' },
       { name: 'orders.update_items', label: 'Cambiar productos del pedido' },
       { name: 'orders.update_status', label: 'Cambiar estado (preparar, enviar, entregar, cancelar)' },
+      { name: 'orders.start_unpaid', label: 'Empezar a preparar sin el 50% pagado' },
       { name: 'orders.record_payment', label: 'Registrar pagos' },
       { name: 'orders.record_refund', label: 'Registrar reembolsos y montos retenidos' },
       { name: 'orders.void_payment', label: 'Anular pagos' },

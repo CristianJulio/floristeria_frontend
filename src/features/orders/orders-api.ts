@@ -21,6 +21,9 @@ export type OrderBalance = {
   amountDue: number
   pendingPayment: number
   pendingRefund: number
+  // Half the total must be paid before preparing starts; missingToStart is 0 once it is
+  minimumToStart: number
+  missingToStart: number
 }
 
 export type AuditUser = {

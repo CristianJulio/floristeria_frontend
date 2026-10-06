@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { useAuth } from '@/features/auth/auth-context'
+import { formatMoney } from './order-format'
 import { changeOrderStatus, type Order, type OrderStatus } from './orders-api'
 
 // The only forward step from each status, with its button label and confirmation question.
@@ -45,7 +46,11 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
       closeDialog()
     },
     onError: (err) => {
-      setError(apiErrorMessage(err))
+      setError(
+        err instanceof ApiError && err.status === 409 && err.message.startsWith('At least')
+          ? 'Aún no se ha pagado la mitad del pedido. Registra el pago antes de empezar.'
+          : apiErrorMessage(err),
+      )
       // Someone else changed the order: show its current state
       if (err instanceof ApiError && err.status === 409) {
         queryClient.invalidateQueries({ queryKey: ['order', order.id] })
@@ -55,6 +60,11 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
 
   const nextStep = NEXT_STEP[order.status]
   const canCancel = CANCELLABLE.includes(order.status)
+  // Preparing needs half the total paid; some roles may start anyway, as an exception.
+  // The page explains what's missing in a notice under its header
+  const { missingToStart, minimumToStart, netPaid, total } = order.balance
+  const unpaidToStart = nextStep?.status === 'PREPARING' && missingToStart > 0
+  const canStartUnpaid = can('orders.start_unpaid')
   if (!can('orders.update_status') || (!nextStep && !canCancel)) {
     return middle ? <div className="flex flex-wrap gap-2">{middle}</div> : null
   }
@@ -85,7 +95,11 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
         </Button>
       )}
       {middle}
-      {nextStep && <Button onClick={() => openDialog('advance')}>{nextStep.label}</Button>}
+      {nextStep && (
+        <Button onClick={() => openDialog('advance')} disabled={unpaidToStart && !canStartUnpaid}>
+          {nextStep.label}
+        </Button>
+      )}
 
       <Dialog open={dialog !== null} onOpenChange={(open) => !open && !mutation.isPending && closeDialog()}>
         <DialogContent>
@@ -97,6 +111,13 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
                   {nextStep.question} {order.recipientName}? Esto no se puede deshacer.
                 </DialogDescription>
               </DialogHeader>
+              {unpaidToStart && (
+                <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  Se ha pagado {formatMoney(netPaid)} de {formatMoney(total)}. Faltan {formatMoney(missingToStart)} para
+                  llegar a la mitad ({formatMoney(minimumToStart)}). Puedes empezar igualmente porque tu rol permite
+                  hacer esta excepción.
+                </p>
+              )}
               {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog} disabled={mutation.isPending}>
