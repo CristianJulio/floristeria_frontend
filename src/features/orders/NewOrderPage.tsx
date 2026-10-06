@@ -80,8 +80,7 @@ export function NewOrderPage() {
           </div>
 
           <div className="flex flex-col gap-4 lg:sticky lg:top-4">
-            {/* overflow-visible: the product suggestions list must be able to extend past the card */}
-            <Card className="overflow-visible">
+            <Card>
               <CardHeader>
                 <CardTitle>Productos</CardTitle>
               </CardHeader>

@@ -1,8 +1,10 @@
+import { useState } from 'react'
+import { PlusIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Product } from '@/features/products/products-api'
 import { formatMoney } from './order-format'
 import type { OrderFormValues } from './order-form-schema'
-import { ProductPicker } from './ProductPicker'
+import { ProductCatalogDialog } from './ProductCatalogDialog'
 
 type Item = OrderFormValues['items'][number]
 
@@ -16,10 +18,11 @@ type Props = {
   deliveryFee?: number
 }
 
-// The products list of an order form: search to add, – / + to change quantities, × to remove
+// The products list of an order form: a catalog to add from, – / + to change quantities, × to remove
 export function OrderItemsEditor({ items, onChange, error, unavailableIds, deliveryFee = 0 }: Props) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const total = subtotal + deliveryFee
+  const [catalogOpen, setCatalogOpen] = useState(false)
 
   // A product already in the list gets one more unit instead of a second row
   function add(product: Product) {
@@ -35,15 +38,34 @@ export function OrderItemsEditor({ items, onChange, error, unavailableIds, deliv
     onChange(items.map((item) => (item.productId === productId ? { ...item, quantity } : item)))
   }
 
+  // From the catalog: one unit less, and the product leaves the order at zero
+  function removeOne(productId: string) {
+    const item = items.find((item) => item.productId === productId)
+    if (!item) return
+    if (item.quantity <= 1) remove(productId)
+    else setQuantity(productId, item.quantity - 1)
+  }
+
   function remove(productId: string) {
     onChange(items.filter((item) => item.productId !== productId))
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <ProductPicker onPick={add} />
+      <Button type="button" variant="outline" onClick={() => setCatalogOpen(true)}>
+        <PlusIcon aria-hidden />
+        Agregar productos
+      </Button>
+      {catalogOpen && (
+        <ProductCatalogDialog
+          quantities={new Map(items.map((item) => [item.productId, item.quantity]))}
+          onAdd={add}
+          onRemoveOne={removeOne}
+          onClose={() => setCatalogOpen(false)}
+        />
+      )}
 
-      {/* A long list scrolls on its own, so the search, total and buttons around it stay on screen
+      {/* A long list scrolls on its own, so the add button, total and buttons around it stay on screen
           (in the change-products dialog and in the new order's summary panel) */}
       {items.length > 0 && (
         <ul className="-mr-2 max-h-[40svh] overflow-y-auto pr-2 text-sm">
