@@ -14,7 +14,7 @@ import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
-import { fetchProducts, updateProduct, type Product } from './products-api'
+import { CATEGORY_LABELS, PRODUCT_CATEGORIES, fetchProducts, updateProduct, type Product } from './products-api'
 import { ProductFormDialog } from './ProductFormDialog'
 import { ProductPlaceholder } from './ProductPlaceholder'
 
@@ -23,6 +23,16 @@ const AVAILABILITY_FILTERS = [
   { value: 'si', label: 'Disponibles', available: true },
   { value: 'no', label: 'No disponibles', available: false },
 ] as const
+
+// In the address as the label in lowercase, e.g. ?categoria=ramos
+const CATEGORY_FILTERS = [
+  { value: 'todas', label: 'Todas', category: undefined },
+  ...PRODUCT_CATEGORIES.map((category) => ({
+    value: CATEGORY_LABELS[category].toLowerCase(),
+    label: CATEGORY_LABELS[category],
+    category,
+  })),
+]
 
 function ProductImage({ product }: { product: Product }) {
   const [broken, setBroken] = useState(false)
@@ -92,6 +102,7 @@ export function ProductsPage() {
 
   const search = params.get('buscar') ?? ''
   const availability = AVAILABILITY_FILTERS.find((f) => f.value === params.get('disponibles')) ?? AVAILABILITY_FILTERS[0]
+  const category = CATEGORY_FILTERS.find((f) => f.value === params.get('categoria')) ?? CATEGORY_FILTERS[0]
   const page = Math.max(1, Number(params.get('pagina')) || 1)
 
   // Filters live in the page's address, like the orders list; any change goes back to page 1
@@ -111,7 +122,7 @@ export function ProductsPage() {
     return () => clearTimeout(timer)
   })
 
-  const filters = { search, available: availability.available, page, pageSize: 20 }
+  const filters = { search, available: availability.available, category: category.category, page, pageSize: 20 }
   const { data, isPending, isError, isFetching, refetch } = useQuery({
     queryKey: ['products', filters],
     queryFn: () => fetchProducts(filters),
@@ -142,6 +153,13 @@ export function ProductsPage() {
           onChange={(value) => setParam('disponibles', value === 'todos' ? null : value)}
           className="flex w-full sm:w-auto"
         />
+        <SegmentedControl
+          label="Categoría"
+          options={CATEGORY_FILTERS}
+          value={category.value}
+          onChange={(value) => setParam('categoria', value === 'todas' ? null : value)}
+          className="flex w-full sm:w-auto"
+        />
         <SearchInput
           label="Buscar productos"
           placeholder="Nombre del producto"
@@ -164,7 +182,7 @@ export function ProductsPage() {
         <EmptyState
           icon={PackageSearchIcon}
           title="No hay productos con estos filtros."
-          hint="Prueba con otro nombre o cambia la disponibilidad."
+          hint="Prueba con otro nombre o cambia la categoría o la disponibilidad."
         />
       ) : (
         <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
@@ -186,9 +204,10 @@ export function ProductsPage() {
                         <ProductImage product={product} />
                         <div className="min-w-0">
                           <div className="font-medium">{product.name}</div>
-                          {product.description && (
-                            <div className="max-w-md truncate text-xs text-muted-foreground">{product.description}</div>
-                          )}
+                          <div className="max-w-md truncate text-xs text-muted-foreground">
+                            {CATEGORY_LABELS[product.category]}
+                            {product.description && ` · ${product.description}`}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -215,6 +234,7 @@ export function ProductsPage() {
                 <ProductImage product={product} />
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">{product.name}</div>
+                  <div className="text-xs text-muted-foreground">{CATEGORY_LABELS[product.category]}</div>
                   <div className="text-sm tabular-nums">{formatMoney(product.price)}</div>
                 </div>
                 <AvailabilitySwitch product={product} disabled={!canEdit} />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Input } from '@/components/ui/input'
-import { fetchProducts, type Product } from '@/features/products/products-api'
+import { CATEGORY_LABELS, fetchProducts, type Product } from '@/features/products/products-api'
 import { formatMoney } from './order-format'
 
 type Props = {
@@ -75,7 +75,10 @@ export function ProductPicker({ onPick }: Props) {
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => pick(product)}
                 >
-                  <span>{product.name}</span>
+                  <span>
+                    {product.name}
+                    <span className="text-muted-foreground"> · {CATEGORY_LABELS[product.category]}</span>
+                  </span>
                   <span className="text-muted-foreground">{formatMoney(product.price)}</span>
                 </button>
               </li>

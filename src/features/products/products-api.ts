@@ -1,10 +1,21 @@
 import { apiFetch } from '@/lib/api-client'
 import type { Pagination } from '@/features/orders/orders-api'
 
+export const PRODUCT_CATEGORIES = ['RAMOS', 'ARREGLOS', 'CORONAS', 'EVENTOS'] as const
+export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]
+
+export const CATEGORY_LABELS: Record<ProductCategory, string> = {
+  RAMOS: 'Ramos',
+  ARREGLOS: 'Arreglos',
+  CORONAS: 'Coronas',
+  EVENTOS: 'Eventos',
+}
+
 export type Product = {
   id: string
   name: string
   description: string | null
+  category: ProductCategory
   price: number
   imageUrl: string | null
   available: boolean
@@ -13,6 +24,7 @@ export type Product = {
 export type ProductsFilters = {
   search?: string
   available?: boolean
+  category?: ProductCategory
   page?: number
   pageSize?: number
 }
@@ -20,6 +32,7 @@ export type ProductsFilters = {
 export type ProductInput = {
   name: string
   description: string | null
+  category: ProductCategory
   price: number
   imageUrl: string | null
   available: boolean
@@ -31,6 +44,7 @@ export async function createProduct(input: ProductInput) {
     // On create, empty optional fields are simply left out
     body: {
       name: input.name,
+      category: input.category,
       price: input.price,
       available: input.available,
       ...(input.description && { description: input.description }),
@@ -56,6 +70,7 @@ export async function fetchProducts(filters: ProductsFilters = {}) {
     query: {
       search: filters.search?.trim() || undefined,
       available: filters.available,
+      category: filters.category,
       page: filters.page,
       pageSize: filters.pageSize,
     },

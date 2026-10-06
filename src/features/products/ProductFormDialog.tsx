@@ -19,12 +19,20 @@ import { Textarea } from '@/components/ui/textarea'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
-import { createProduct, updateProduct, type Product, type ProductInput } from './products-api'
+import {
+  CATEGORY_LABELS,
+  PRODUCT_CATEGORIES,
+  createProduct,
+  updateProduct,
+  type Product,
+  type ProductInput,
+} from './products-api'
 
 // Same limits as the backend's product schema; the price is typed as text and converted
 const productFormSchema = z.object({
   name: z.string().trim().min(1, 'Escribe el nombre').max(50, 'Máximo 50 caracteres'),
   description: z.string().trim().max(255, 'Máximo 255 caracteres'),
+  category: z.enum(PRODUCT_CATEGORIES, { error: 'Elige la categoría' }),
   price: z
     .string()
     .trim()
@@ -44,6 +52,7 @@ function toProductInput(values: ProductFormValues): ProductInput {
   return {
     name: values.name.trim(),
     description: values.description.trim() || null,
+    category: values.category,
     price: Number(values.price),
     imageUrl: values.imageUrl.trim() || null,
     available: values.available,
@@ -66,12 +75,15 @@ export function ProductFormDialog({ product, onClose }: Props) {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       name: product?.name ?? '',
       description: product?.description ?? '',
+      // New products start without one, so staff always choose it
+      ...(product && { category: product.category }),
       price: product ? String(product.price) : '',
       imageUrl: product?.imageUrl ?? '',
       available: product?.available ?? true,
@@ -79,6 +91,7 @@ export function ProductFormDialog({ product, onClose }: Props) {
   })
 
   const price = useWatch({ control, name: 'price' })
+  const category = useWatch({ control, name: 'category' })
   const pricePreview = /^\d+$/.test((price ?? '').trim()) ? formatMoney(Number(price)) : null
 
   const mutation = useMutation({
@@ -120,6 +133,26 @@ export function ProductFormDialog({ product, onClose }: Props) {
             <Label htmlFor="product-name">Nombre</Label>
             <Input id="product-name" autoFocus aria-invalid={!!errors.name} {...register('name')} />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">Categoría</span>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Categoría">
+              {PRODUCT_CATEGORIES.map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  size="sm"
+                  role="radio"
+                  aria-checked={category === option}
+                  variant={category === option ? 'default' : 'outline'}
+                  onClick={() => setValue('category', option, { shouldValidate: true })}
+                >
+                  {CATEGORY_LABELS[option]}
+                </Button>
+              ))}
+            </div>
+            {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
           </div>
 
           <div className="flex flex-col gap-2">
