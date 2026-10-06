@@ -237,9 +237,8 @@ export function OrderDetailPage() {
 
       {order.status === 'PENDING' && order.balance.missingToStart > 0 && (
         <p role="note" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Para empezar a prepararlo falta pagar{' '}
-          <span className="font-medium tabular-nums">{formatMoney(order.balance.missingToStart)}</span>: la mitad
-          del total debe estar pagada.
+          Falta pagar <span className="font-medium tabular-nums">{formatMoney(order.balance.missingToStart)}</span>{' '}
+          para poder empezar (50% del total).
         </p>
       )}
 

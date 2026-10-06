@@ -14,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { useAuth } from '@/features/auth/auth-context'
-import { formatMoney } from './order-format'
 import { changeOrderStatus, type Order, type OrderStatus } from './orders-api'
 
 // The only forward step from each status, with its button label and confirmation question.
@@ -62,8 +61,7 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
   const canCancel = CANCELLABLE.includes(order.status)
   // Preparing needs half the total paid; some roles may start anyway, as an exception.
   // The page explains what's missing in a notice under its header
-  const { missingToStart, minimumToStart, netPaid, total } = order.balance
-  const unpaidToStart = nextStep?.status === 'PREPARING' && missingToStart > 0
+  const unpaidToStart = nextStep?.status === 'PREPARING' && order.balance.missingToStart > 0
   const canStartUnpaid = can('orders.start_unpaid')
   if (!can('orders.update_status') || (!nextStep && !canCancel)) {
     return middle ? <div className="flex flex-wrap gap-2">{middle}</div> : null
@@ -112,10 +110,8 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
                 </DialogDescription>
               </DialogHeader>
               {unpaidToStart && (
-                <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                  Se ha pagado {formatMoney(netPaid)} de {formatMoney(total)}. Faltan {formatMoney(missingToStart)} para
-                  llegar a la mitad ({formatMoney(minimumToStart)}). Puedes empezar igualmente porque tu rol permite
-                  hacer esta excepción.
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  Aún no está pagado el 50%; empezará como excepción.
                 </p>
               )}
               {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
