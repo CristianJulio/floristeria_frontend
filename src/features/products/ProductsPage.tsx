@@ -26,7 +26,7 @@ const AVAILABILITY_FILTERS = [
 
 // In the address as the label in lowercase, e.g. ?categoria=ramos
 const CATEGORY_FILTERS = [
-  { value: 'todas', label: 'Todas', category: undefined },
+  { value: 'todos', label: 'Todos', category: undefined },
   ...PRODUCT_CATEGORIES.map((category) => ({
     value: CATEGORY_LABELS[category].toLowerCase(),
     label: CATEGORY_LABELS[category],
@@ -157,7 +157,7 @@ export function ProductsPage() {
           label="Categoría"
           options={CATEGORY_FILTERS}
           value={category.value}
-          onChange={(value) => setParam('categoria', value === 'todas' ? null : value)}
+          onChange={(value) => setParam('categoria', value === 'todos' ? null : value)}
           className="flex w-full sm:w-auto"
         />
         <SearchInput
