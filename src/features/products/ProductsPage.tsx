@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { PackageSearchIcon } from 'lucide-react'
@@ -25,15 +26,34 @@ const AVAILABILITY_FILTERS = [
 
 function ProductImage({ product }: { product: Product }) {
   const [broken, setBroken] = useState(false)
+  const [open, setOpen] = useState(false)
   if (!product.imageUrl || broken) return <ProductPlaceholder className="size-10 shrink-0" />
   return (
-    <img
-      src={product.imageUrl}
-      alt=""
-      loading="lazy"
-      className="size-10 shrink-0 rounded-md object-cover"
-      onError={() => setBroken(true)}
-    />
+    <>
+      <button
+        type="button"
+        aria-label={`Ver imagen de ${product.name}`}
+        className="shrink-0 cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        onClick={() => setOpen(true)}
+      >
+        <img
+          src={product.imageUrl}
+          alt=""
+          loading="lazy"
+          className="size-10 rounded-md object-cover"
+          onError={() => setBroken(true)}
+        />
+      </button>
+      {/* Shows the image at full size so staff can see the arrangement */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="pr-8">{product.name}</DialogTitle>
+          </DialogHeader>
+          <img src={product.imageUrl} alt={product.name} className="max-h-[70vh] w-full rounded-md object-contain" />
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
