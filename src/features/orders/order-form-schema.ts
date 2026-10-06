@@ -32,6 +32,12 @@ const orderDetailsFields = z.object({
   deliveryDate: z.string().min(1, 'Elige la fecha de entrega'),
   deliveryTimeFrom: time,
   deliveryTimeTo: time,
+  // Typed as text like product prices; empty counts as no fee
+  deliveryFee: z
+    .string()
+    .trim()
+    .regex(/^\d*$/, 'Escribe solo números, sin puntos ni signos')
+    .refine((value) => Number(value) <= 2_147_483_647, 'El valor es demasiado alto'),
 })
 
 type DetailsValues = z.infer<typeof orderDetailsFields>
@@ -100,8 +106,15 @@ export function emptyOrderForm(): OrderFormValues {
     deliveryDate: todayInColombia(),
     deliveryTimeFrom: '',
     deliveryTimeTo: '',
+    deliveryFee: '0',
     items: [],
   }
+}
+
+// The fee as typed so far, for totals shown while editing; an invalid value counts as no fee until it's fixed
+export function typedDeliveryFee(text: string | undefined) {
+  const value = (text ?? '').trim()
+  return /^\d+$/.test(value) ? Number(value) : 0
 }
 
 // "+573001234567" -> Colombia + "3001234567". Country codes never start with another code,
@@ -133,6 +146,7 @@ export function orderToDetailsForm(order: Order): OrderDetailsFormValues {
     deliveryDate: order.deliveryDate,
     deliveryTimeFrom: order.deliveryTimeFrom ?? '',
     deliveryTimeTo: order.deliveryTimeTo ?? '',
+    deliveryFee: String(order.deliveryFee),
   }
 }
 
@@ -160,6 +174,7 @@ export function toCreateOrderInput(values: OrderFormValues): CreateOrderInput {
     deliveryDate: values.deliveryDate,
     deliveryTimeFrom: values.deliveryTimeFrom || undefined,
     deliveryTimeTo: values.deliveryTimeTo || undefined,
+    deliveryFee: Number(values.deliveryFee),
     items: values.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
   }
 }
@@ -179,6 +194,7 @@ export function toUpdateOrderInput(values: OrderDetailsFormValues, order: Order)
     deliveryDate: values.deliveryDate,
     deliveryTimeFrom: values.deliveryTimeFrom || null,
     deliveryTimeTo: values.deliveryTimeTo || null,
+    deliveryFee: Number(values.deliveryFee),
   }
   const changes: UpdateOrderInput = {}
   for (const key of Object.keys(next) as (keyof UpdateOrderInput)[]) {

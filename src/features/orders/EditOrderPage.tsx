@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
@@ -14,6 +14,7 @@ import {
   orderDetailsFormSchema,
   orderToDetailsForm,
   toUpdateOrderInput,
+  typedDeliveryFee,
   type OrderDetailsFormValues,
 } from './order-form-schema'
 import { fetchOrder, updateOrderDetails, type Order } from './orders-api'
@@ -111,8 +112,13 @@ function EditOrderForm({ order }: { order: Order }) {
   )
 }
 
-// What this page doesn't change, for reference while editing: status, products and total
+// What this page doesn't change, for reference while editing: status and products. The total
+// follows the delivery fee being typed. Must be rendered inside the form's FormProvider
 function OrderSummaryCard({ order }: { order: Order }) {
+  const { control } = useFormContext<OrderDetailsFormValues>()
+  const deliveryFee = typedDeliveryFee(useWatch({ control, name: 'deliveryFee' }))
+  const subtotal = order.balance.subtotal
+
   return (
     <Card>
       <CardHeader>
@@ -132,9 +138,15 @@ function OrderSummaryCard({ order }: { order: Order }) {
             </li>
           ))}
         </ul>
+        {deliveryFee > 0 && (
+          <div className="flex justify-between border-t pt-3 text-sm text-muted-foreground">
+            <span>Domicilio</span>
+            <span className="tabular-nums">{formatMoney(deliveryFee)}</span>
+          </div>
+        )}
         <div className="flex items-baseline justify-between border-t pt-3">
           <span className="font-medium">Total</span>
-          <span className="text-xl font-semibold tabular-nums">{formatMoney(order.balance.total)}</span>
+          <span className="text-xl font-semibold tabular-nums">{formatMoney(subtotal + deliveryFee)}</span>
         </div>
         <p className="text-xs text-muted-foreground">
           Los productos y los pagos se cambian desde la página del pedido.

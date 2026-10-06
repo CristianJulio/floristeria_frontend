@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { cn } from 'cn'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,21 +8,24 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { todayInColombia } from '@/lib/dates'
 import { OTHER_COUNTRY, PHONE_COUNTRIES } from '@/lib/phone'
+import { formatMoney } from './order-format'
 import { CITIES, type OrderDetailsFormValues } from './order-form-schema'
 
 export function FormField({
   id,
   label,
   error,
+  className,
   children,
 }: {
   id?: string
   label: string
   error?: string | undefined
+  className?: string
   children: ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn('flex flex-col gap-2', className)}>
       <Label htmlFor={id}>{label}</Label>
       {children}
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -46,6 +50,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
   const phoneCountry = useWatch({ control, name: 'phoneCountry' })
   const city = useWatch({ control, name: 'city' })
   const cardMessage = useWatch({ control, name: 'cardMessage' }) ?? ''
+  const deliveryFee = (useWatch({ control, name: 'deliveryFee' }) ?? '').trim()
 
   return (
     <>
@@ -134,6 +139,23 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
           <p className="text-xs text-muted-foreground sm:col-span-3">
             Deja las horas vacías si puede entregarse a cualquier hora. Para una hora exacta, usa la misma en ambas.
           </p>
+          <FormField
+            id="deliveryFee"
+            label="Valor del domicilio (en pesos)"
+            error={errors.deliveryFee?.message}
+            className="sm:col-span-2"
+          >
+            <Input
+              id="deliveryFee"
+              inputMode="numeric"
+              autoComplete="off"
+              aria-invalid={!!errors.deliveryFee}
+              {...register('deliveryFee')}
+            />
+            {!errors.deliveryFee && /^\d+$/.test(deliveryFee) && (
+              <p className="text-xs text-muted-foreground">{formatMoney(Number(deliveryFee))}</p>
+            )}
+          </FormField>
         </CardContent>
       </Card>
 

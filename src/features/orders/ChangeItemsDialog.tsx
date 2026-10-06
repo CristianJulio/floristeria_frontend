@@ -61,7 +61,8 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
     return current !== undefined && current.price !== item.price
   })
 
-  const newTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // The delivery fee stays the same; only the products change here
+  const newTotal = items.reduce((sum, item) => sum + item.price * item.quantity, order.deliveryFee)
   const netPaid = order.balance.netPaid
   const canSave = !loading && !loadFailed && items.length > 0 && unavailableIds.size === 0
 
@@ -108,7 +109,7 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
                 Algunos precios cambiaron desde que se tomó el pedido; aquí ya se muestran los actuales.
               </p>
             )}
-            <OrderItemsEditor items={items} onChange={setEdited} unavailableIds={unavailableIds} />
+            <OrderItemsEditor items={items} onChange={setEdited} unavailableIds={unavailableIds} deliveryFee={order.deliveryFee} />
             <div className="flex flex-col gap-1 text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>Total</span>

@@ -101,6 +101,12 @@ function ItemsCard({ order }: { order: Order }) {
             </li>
           ))}
         </ul>
+        {order.deliveryFee > 0 && (
+          <div className="flex justify-between border-t py-2">
+            <span>Domicilio</span>
+            <span className="tabular-nums">{formatMoney(order.deliveryFee)}</span>
+          </div>
+        )}
         <div className="mt-2 flex justify-between border-t pt-2 font-semibold">
           <span>Total</span>
           <span className="tabular-nums">{formatMoney(order.balance.total)}</span>

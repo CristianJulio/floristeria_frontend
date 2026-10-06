@@ -12,11 +12,14 @@ type Props = {
   error?: string
   // Products that can no longer be sold; they're highlighted so staff remove or replace them
   unavailableIds?: Set<string>
+  // Added to the products in the total; 0 when the order has no fee
+  deliveryFee?: number
 }
 
 // The products list of an order form: search to add, – / + to change quantities, × to remove
-export function OrderItemsEditor({ items, onChange, error, unavailableIds }: Props) {
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+export function OrderItemsEditor({ items, onChange, error, unavailableIds, deliveryFee = 0 }: Props) {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const total = subtotal + deliveryFee
 
   // A product already in the list gets one more unit instead of a second row
   function add(product: Product) {
@@ -99,6 +102,19 @@ export function OrderItemsEditor({ items, onChange, error, unavailableIds }: Pro
       )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {deliveryFee > 0 && (
+        <div className="flex flex-col gap-1 border-t pt-3 text-sm text-muted-foreground">
+          <div className="flex justify-between">
+            <span>Productos</span>
+            <span className="tabular-nums">{formatMoney(subtotal)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Domicilio</span>
+            <span className="tabular-nums">{formatMoney(deliveryFee)}</span>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-baseline justify-between border-t pt-3">
         <span className="font-medium">Total</span>

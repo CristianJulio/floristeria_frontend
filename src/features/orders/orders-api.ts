@@ -11,6 +11,8 @@ export type OrderItem = {
 }
 
 export type OrderBalance = {
+  // The items alone; total adds the delivery fee
+  subtotal: number
   total: number
   paid: number
   refunded: number
@@ -57,6 +59,7 @@ export type Order = {
   deliveryDate: string
   deliveryTimeFrom: string | null
   deliveryTimeTo: string | null
+  deliveryFee: number
   status: OrderStatus
   cancellationReason: string | null
   items: OrderItem[]
@@ -112,6 +115,7 @@ export type CreateOrderInput = {
   deliveryDate: string
   deliveryTimeFrom?: string
   deliveryTimeTo?: string
+  deliveryFee: number
   items: { productId: string; quantity: number }[]
 }
 
@@ -134,6 +138,7 @@ export type UpdateOrderInput = {
   deliveryDate?: string
   deliveryTimeFrom?: string | null
   deliveryTimeTo?: string | null
+  deliveryFee?: number
 }
 
 export async function updateOrderDetails(id: string, changes: UpdateOrderInput) {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Controller, FormProvider, useForm } from 'react-hook-form'
+import { Controller, FormProvider, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
@@ -7,7 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
-import { emptyOrderForm, orderFormSchema, toCreateOrderInput, type OrderFormValues } from './order-form-schema'
+import {
+  emptyOrderForm,
+  orderFormSchema,
+  toCreateOrderInput,
+  typedDeliveryFee,
+  type OrderFormValues,
+} from './order-form-schema'
 import { createOrder } from './orders-api'
 import { OrderDetailsFields } from './OrderDetailsFields'
 import { OrderItemsEditor } from './OrderItemsEditor'
@@ -36,6 +42,7 @@ export function NewOrderPage() {
     handleSubmit,
     formState: { errors },
   } = form
+  const deliveryFee = typedDeliveryFee(useWatch({ control, name: 'deliveryFee' }))
 
   const mutation = useMutation({
     mutationFn: (values: OrderFormValues) => createOrder(toCreateOrderInput(values)),
@@ -86,6 +93,7 @@ export function NewOrderPage() {
                     <OrderItemsEditor
                       items={field.value}
                       onChange={field.onChange}
+                      deliveryFee={deliveryFee}
                       {...(fieldState.error?.message && { error: fieldState.error.message })}
                     />
                   )}
