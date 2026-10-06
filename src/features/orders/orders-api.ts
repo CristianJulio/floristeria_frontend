@@ -35,7 +35,8 @@ export type OrderPayment = {
   id: string
   type: PaymentType
   amount: number
-  method: PaymentMethod
+  // Null for retained amounts, which move no money
+  method: PaymentMethod | null
   sourceAccount: string | null
   createdAt: string
   createdBy: AuditUser
@@ -152,12 +153,10 @@ export async function replaceOrderItems(id: string, items: { productId: string; 
   return body.data
 }
 
-export type RecordPaymentInput = {
-  type: PaymentType
-  amount: number
-  method: PaymentMethod
-  sourceAccount?: string
-}
+// Payments and refunds say how the money moved; a retained amount sends no method or account
+export type RecordPaymentInput =
+  | { type: 'PAYMENT' | 'REFUND'; amount: number; method: PaymentMethod; sourceAccount?: string }
+  | { type: 'RETAINED'; amount: number }
 
 export async function recordPayment(orderId: string, input: RecordPaymentInput) {
   const body = await apiFetch<{ data: Order }>(`/api/orders/${orderId}/payments`, {

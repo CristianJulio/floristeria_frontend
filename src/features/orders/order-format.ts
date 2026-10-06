@@ -1,4 +1,4 @@
-import type { Order, OrderStatus, PaymentMethod, PaymentType } from './orders-api'
+import type { Order, OrderPayment, OrderStatus, PaymentMethod, PaymentType } from './orders-api'
 
 export const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   PAYMENT: 'Pago',
@@ -10,6 +10,12 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   NEQUI: 'Nequi',
   PAYPAL: 'PayPal',
   CASH: 'Efectivo',
+}
+
+// "Pago · Nequi"; retained amounts move no money, so they usually have no method
+export function paymentLabel(payment: Pick<OrderPayment, 'type' | 'method'>) {
+  const type = PAYMENT_TYPE_LABELS[payment.type]
+  return payment.method ? `${type} · ${PAYMENT_METHOD_LABELS[payment.method]}` : type
 }
 
 // An instant (e.g. createdAt), shown in Colombia's time zone: "18 oct 2026, 3:45 p. m."

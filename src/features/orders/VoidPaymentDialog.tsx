@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
-import { PAYMENT_METHOD_LABELS, PAYMENT_TYPE_LABELS, formatMoney } from './order-format'
+import { formatMoney, paymentLabel } from './order-format'
 import { voidPayment, type Order, type OrderPayment } from './orders-api'
 
 type Props = {
@@ -63,7 +63,7 @@ export function VoidPaymentDialog({ order, payment, onClose }: Props) {
           <DialogHeader>
             <DialogTitle>Anular movimiento</DialogTitle>
             <DialogDescription>
-              {PAYMENT_TYPE_LABELS[payment.type]} · {PAYMENT_METHOD_LABELS[payment.method]} ·{' '}
+              {paymentLabel(payment)} ·{' '}
               {formatMoney(payment.amount)}. Seguirá visible en el historial, pero dejará de contar en el saldo.
             </DialogDescription>
           </DialogHeader>

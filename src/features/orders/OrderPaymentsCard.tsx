@@ -5,12 +5,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { useAuth } from '@/features/auth/auth-context'
 import { RecordPaymentDialog } from './RecordPaymentDialog'
 import { VoidPaymentDialog } from './VoidPaymentDialog'
-import {
-  PAYMENT_METHOD_LABELS,
-  PAYMENT_TYPE_LABELS,
-  formatDateTime,
-  formatMoney,
-} from './order-format'
+import { formatDateTime, formatMoney, paymentLabel } from './order-format'
 import type { Order, OrderPayment, PaymentType } from './orders-api'
 
 function BalanceRow({ label, amount }: { label: string; amount: number }) {
@@ -48,7 +43,7 @@ function PaymentEntry({ payment, onVoid }: { payment: OrderPayment; onVoid?: () 
     <li className={`flex flex-col gap-0.5 border-b py-2 last:border-b-0 ${voided ? 'text-muted-foreground' : ''}`}>
       <div className="flex justify-between gap-2">
         <span className={voided ? 'line-through' : 'font-medium'}>
-          {PAYMENT_TYPE_LABELS[payment.type]} · {PAYMENT_METHOD_LABELS[payment.method]}
+          {paymentLabel(payment)}
         </span>
         <span className={cn('tabular-nums', voided && 'line-through')}>
           {sign}

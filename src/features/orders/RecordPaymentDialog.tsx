@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { PAYMENT_METHOD_LABELS, formatMoney } from './order-format'
-import { recordPayment, type Order, type PaymentMethod, type PaymentType } from './orders-api'
+import { recordPayment, type Order, type PaymentMethod, type PaymentType, type RecordPaymentInput } from './orders-api'
 
 const METHODS: PaymentMethod[] = ['NEQUI', 'PAYPAL', 'CASH']
 
@@ -36,26 +36,47 @@ function maxAmount(order: Order, type: PaymentType) {
   return type === 'PAYMENT' ? order.balance.pendingPayment : order.balance.pendingRefund
 }
 
-function buildSchema(max: number) {
-  return z.object({
-    amount: z
-      .string()
-      .trim()
-      .regex(/^\d+$/, 'Escribe solo números, sin puntos ni signos')
-      .transform(Number)
-      .pipe(
-        z
-          .number()
-          .min(1, 'El monto debe ser mayor que cero')
-          .max(max, `El monto no puede superar ${formatMoney(max)}`),
-      ),
-    method: z.enum(METHODS, { error: 'Elige cómo se hizo el movimiento' }),
-    sourceAccount: z.string().trim().max(100, 'Máximo 100 caracteres'),
-  })
+// Retained amounts move no money, so only payments and refunds ask for a method
+function buildSchema(max: number, needsMethod: boolean) {
+  return z
+    .object({
+      amount: z
+        .string()
+        .trim()
+        .regex(/^\d+$/, 'Escribe solo números, sin puntos ni signos')
+        .transform(Number)
+        .pipe(
+          z
+            .number()
+            .min(1, 'El monto debe ser mayor que cero')
+            .max(max, `El monto no puede superar ${formatMoney(max)}`),
+        ),
+      method: z.enum(METHODS).optional(),
+      sourceAccount: z.string().trim().max(100, 'Máximo 100 caracteres'),
+    })
+    .refine((values) => !needsMethod || values.method !== undefined, {
+      message: 'Elige cómo se hizo el movimiento',
+      path: ['method'],
+      // Checked even while the amount is invalid, so every missing field is marked at once
+      when: () => true,
+    })
 }
 
 type FormInput = z.input<ReturnType<typeof buildSchema>>
 type FormOutput = z.output<ReturnType<typeof buildSchema>>
+
+function toRecordPaymentInput(type: PaymentType, values: FormOutput): RecordPaymentInput {
+  if (type === 'RETAINED') return { type, amount: values.amount }
+  // The form's schema already requires it for payments and refunds
+  if (!values.method) throw new Error('A method is required for payments and refunds')
+  return {
+    type,
+    amount: values.amount,
+    method: values.method,
+    // Cash has no account
+    ...(values.method !== 'CASH' && values.sourceAccount && { sourceAccount: values.sourceAccount }),
+  }
+}
 
 type Props = {
   order: Order
@@ -68,6 +89,7 @@ export function RecordPaymentDialog({ order, type, onClose }: Props) {
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
   const max = maxAmount(order, type)
+  const needsMethod = type !== 'RETAINED'
   const copy = COPY[type]
 
   const {
@@ -77,7 +99,7 @@ export function RecordPaymentDialog({ order, type, onClose }: Props) {
     control,
     formState: { errors },
   } = useForm<FormInput, unknown, FormOutput>({
-    resolver: zodResolver(buildSchema(max)),
+    resolver: zodResolver(buildSchema(max, needsMethod)),
     defaultValues: {
       // Paying the rest or refunding everything is the common case; retained amounts are a decision
       amount: type === 'RETAINED' ? '' : String(max),
@@ -89,14 +111,7 @@ export function RecordPaymentDialog({ order, type, onClose }: Props) {
   const amount = useWatch({ control, name: 'amount' })
 
   const mutation = useMutation({
-    mutationFn: (values: FormOutput) =>
-      recordPayment(order.id, {
-        type,
-        amount: values.amount,
-        method: values.method,
-        // Cash has no account
-        ...(values.method !== 'CASH' && values.sourceAccount && { sourceAccount: values.sourceAccount }),
-      }),
+    mutationFn: (values: FormOutput) => recordPayment(order.id, toRecordPaymentInput(type, values)),
     onSuccess: (updated) => {
       queryClient.setQueryData(['order', order.id], updated)
       queryClient.invalidateQueries({ queryKey: ['orders'] })
@@ -145,27 +160,29 @@ export function RecordPaymentDialog({ order, type, onClose }: Props) {
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Método</span>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Método">
-              {METHODS.map((option) => (
-                <Button
-                  key={option}
-                  type="button"
-                  size="sm"
-                  role="radio"
-                  aria-checked={method === option}
-                  variant={method === option ? 'default' : 'outline'}
-                  onClick={() => setValue('method', option, { shouldValidate: true })}
-                >
-                  {PAYMENT_METHOD_LABELS[option]}
-                </Button>
-              ))}
+          {needsMethod && (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Método</span>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Método">
+                {METHODS.map((option) => (
+                  <Button
+                    key={option}
+                    type="button"
+                    size="sm"
+                    role="radio"
+                    aria-checked={method === option}
+                    variant={method === option ? 'default' : 'outline'}
+                    onClick={() => setValue('method', option, { shouldValidate: true })}
+                  >
+                    {PAYMENT_METHOD_LABELS[option]}
+                  </Button>
+                ))}
+              </div>
+              {errors.method && <p className="text-sm text-destructive">{errors.method.message}</p>}
             </div>
-            {errors.method && <p className="text-sm text-destructive">{errors.method.message}</p>}
-          </div>
+          )}
 
-          {method && method !== 'CASH' && (
+          {needsMethod && method && method !== 'CASH' && (
             <div className="flex flex-col gap-2">
               <Label htmlFor="payment-account">Cuenta (opcional)</Label>
               <Input
