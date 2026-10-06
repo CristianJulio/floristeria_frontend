@@ -26,6 +26,36 @@ const NEXT_STEP: Partial<Record<OrderStatus, { status: OrderStatus; label: strin
 
 const CANCELLABLE: OrderStatus[] = ['PENDING', 'PREPARING']
 
+// Steps that need part of the order paid first: half to start preparing, all of it to deliver.
+// Roles with the permission may go ahead anyway, as an exception. Mirrors the backend's rules;
+// the page explains what's missing in a notice under its header
+type PaymentGate = {
+  missing: (balance: Order['balance']) => number
+  permission: string
+  // Shown in the confirmation when going ahead as an exception
+  exception: string
+  // Shown if the backend refuses it; apiError is how its message starts
+  refused: string
+  apiError: string
+}
+
+const PAYMENT_GATES: Partial<Record<OrderStatus, PaymentGate>> = {
+  PREPARING: {
+    missing: (balance) => balance.missingToStart,
+    permission: 'orders.start_unpaid',
+    exception: 'Aún no está pagado el 50%; empezará como excepción.',
+    refused: 'Aún no se ha pagado la mitad del pedido. Registra el pago antes de empezar.',
+    apiError: 'At least',
+  },
+  DELIVERED: {
+    missing: (balance) => balance.pendingPayment,
+    permission: 'orders.deliver_unpaid',
+    exception: 'Aún no está pagado por completo; se entregará como excepción.',
+    refused: 'El pedido aún no está pagado por completo. Registra el pago antes de entregarlo.',
+    apiError: 'The order must be fully paid',
+  },
+}
+
 type DialogMode = 'advance' | 'cancel' | null
 
 // `middle` (e.g. the edit button) is placed between cancel and the next step, so the main action stays last
@@ -35,6 +65,9 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
   const [dialog, setDialog] = useState<DialogMode>(null)
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  const nextStep = NEXT_STEP[order.status]
+  const gate = nextStep && PAYMENT_GATES[nextStep.status]
 
   const mutation = useMutation({
     mutationFn: ({ status, cancellationReason }: { status: OrderStatus; cancellationReason?: string }) =>
@@ -46,8 +79,8 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
     },
     onError: (err) => {
       setError(
-        err instanceof ApiError && err.status === 409 && err.message.startsWith('At least')
-          ? 'Aún no se ha pagado la mitad del pedido. Registra el pago antes de empezar.'
+        gate && err instanceof ApiError && err.status === 409 && err.message.startsWith(gate.apiError)
+          ? gate.refused
           : apiErrorMessage(err),
       )
       // Someone else changed the order: show its current state
@@ -57,12 +90,9 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
     },
   })
 
-  const nextStep = NEXT_STEP[order.status]
   const canCancel = CANCELLABLE.includes(order.status)
-  // Preparing needs half the total paid; some roles may start anyway, as an exception.
-  // The page explains what's missing in a notice under its header
-  const unpaidToStart = nextStep?.status === 'PREPARING' && order.balance.missingToStart > 0
-  const canStartUnpaid = can('orders.start_unpaid')
+  const unpaid = gate !== undefined && gate.missing(order.balance) > 0
+  const canGoUnpaid = gate !== undefined && can(gate.permission)
   if (!can('orders.update_status') || (!nextStep && !canCancel)) {
     return middle ? <div className="flex flex-wrap gap-2">{middle}</div> : null
   }
@@ -94,7 +124,7 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
       )}
       {middle}
       {nextStep && (
-        <Button onClick={() => openDialog('advance')} disabled={unpaidToStart && !canStartUnpaid}>
+        <Button onClick={() => openDialog('advance')} disabled={unpaid && !canGoUnpaid}>
           {nextStep.label}
         </Button>
       )}
@@ -109,11 +139,7 @@ export function OrderStatusActions({ order, middle }: { order: Order; middle?: R
                   {nextStep.question} {order.recipientName}? Esto no se puede deshacer.
                 </DialogDescription>
               </DialogHeader>
-              {unpaidToStart && (
-                <p className="text-sm text-amber-700 dark:text-amber-400">
-                  Aún no está pagado el 50%; empezará como excepción.
-                </p>
-              )}
+              {unpaid && gate && <p className="text-sm text-amber-700 dark:text-amber-400">{gate.exception}</p>}
               {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog} disabled={mutation.isPending}>

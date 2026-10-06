@@ -241,6 +241,12 @@ export function OrderDetailPage() {
           para poder empezar (50% del total).
         </p>
       )}
+      {order.status === 'OUT_FOR_DELIVERY' && order.balance.pendingPayment > 0 && (
+        <p role="note" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Falta pagar <span className="font-medium tabular-nums">{formatMoney(order.balance.pendingPayment)}</span>{' '}
+          para poder marcarlo como entregado.
+        </p>
+      )}
 
       {order.cancellationReason && (
         <p role="note" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
