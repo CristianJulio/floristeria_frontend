@@ -36,8 +36,8 @@ function BalanceSummary({ balance }: { balance: Order['balance'] }) {
 
 function PaymentEntry({ payment, onVoid }: { payment: OrderPayment; onVoid?: () => void }) {
   const voided = payment.voidedAt !== null
-  // Refunds and retained amounts reduce what the shop holds for the customer
-  const sign = payment.type === 'PAYMENT' ? '' : '−'
+  // Only refunds are money going out; a retained amount stays with the shop, so it has no sign
+  const sign = payment.type === 'REFUND' ? '−' : ''
 
   return (
     <li className={`flex flex-col gap-0.5 border-b py-2 last:border-b-0 ${voided ? 'text-muted-foreground' : ''}`}>
