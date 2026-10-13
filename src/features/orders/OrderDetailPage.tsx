@@ -69,6 +69,24 @@ function DeliveryCard({ order }: { order: Order }) {
 }
 
 // Cards are printed, so the message is copied as is (line breaks included) to paste into the print file
+// The old way to copy: select the text in a hidden box and run the browser's copy command
+function copyWithTextBox(text: string) {
+  const box = document.createElement('textarea')
+  box.value = text
+  box.setAttribute('readonly', '')
+  box.style.position = 'fixed'
+  box.style.opacity = '0'
+  document.body.appendChild(box)
+  box.select()
+  try {
+    return document.execCommand('copy')
+  } catch {
+    return false
+  } finally {
+    document.body.removeChild(box)
+  }
+}
+
 function CopyMessageButton({ message }: { message: string }) {
   const [result, setResult] = useState<'copied' | 'failed' | null>(null)
 
@@ -81,10 +99,13 @@ function CopyMessageButton({ message }: { message: string }) {
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(message)
+      // navigator.clipboard only exists on secure pages (https or localhost); elsewhere the older
+      // way, through a hidden text box, still works
+      if (navigator.clipboard) await navigator.clipboard.writeText(message)
+      else if (!copyWithTextBox(message)) throw new Error('copy failed')
       setResult('copied')
     } catch {
-      setResult('failed')
+      setResult(copyWithTextBox(message) ? 'copied' : 'failed')
     }
   }
 
