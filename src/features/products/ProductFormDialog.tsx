@@ -63,10 +63,12 @@ type Props = {
   // Without a product the dialog creates one
   product?: Product
   onClose: () => void
+  // Called with the new product, after the dialog's own onClose; only when creating
+  onCreated?: (product: Product) => void
 }
 
 // Rendered only while open, so every opening starts from the product's current values
-export function ProductFormDialog({ product, onClose }: Props) {
+export function ProductFormDialog({ product, onClose, onCreated }: Props) {
   const queryClient = useQueryClient()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const isEdit = product !== undefined
@@ -97,10 +99,11 @@ export function ProductFormDialog({ product, onClose }: Props) {
   const mutation = useMutation({
     mutationFn: (values: ProductFormValues) =>
       isEdit ? updateProduct(product.id, toProductInput(values)) : createProduct(toProductInput(values)),
-    onSuccess: () => {
+    onSuccess: (saved) => {
       // Product lists and the order form's product search both read these
       queryClient.invalidateQueries({ queryKey: ['products'] })
       onClose()
+      if (!isEdit) onCreated?.(saved)
     },
     onError: (error) => {
       setSubmitError(

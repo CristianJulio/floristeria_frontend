@@ -103,6 +103,14 @@ export function ProductsPage() {
   const { can } = useAuth()
   const [params, setParams] = useSearchParams()
   const [dialogProduct, setDialogProduct] = useState<Product | 'new' | null>(null)
+  const [createdName, setCreatedName] = useState<string | null>(null)
+
+  // The confirmation fades away on its own
+  useEffect(() => {
+    if (!createdName) return
+    const timer = setTimeout(() => setCreatedName(null), 5000)
+    return () => clearTimeout(timer)
+  }, [createdName])
 
   const search = params.get('buscar') ?? ''
   const onlyAvailable = params.get('disponibles') === 'si'
@@ -149,6 +157,20 @@ export function ProductsPage() {
         </div>
         {can('products.create') && <Button onClick={() => setDialogProduct('new')}>Nuevo producto</Button>}
       </div>
+
+      {createdName && (
+        <p
+          role="status"
+          className="flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+        >
+          <span>
+            Producto <span className="font-medium">{createdName}</span> creado.
+          </span>
+          <button type="button" className="underline-offset-4 hover:underline" onClick={() => setCreatedName(null)}>
+            Cerrar
+          </button>
+        </p>
+      )}
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -297,6 +319,7 @@ export function ProductsPage() {
         <ProductFormDialog
           {...(dialogProduct !== 'new' && { product: dialogProduct })}
           onClose={() => setDialogProduct(null)}
+          onCreated={(created) => setCreatedName(created.name)}
         />
       )}
     </section>
