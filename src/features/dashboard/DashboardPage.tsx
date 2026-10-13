@@ -1,19 +1,68 @@
 import { useState } from 'react'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { SegmentedControl } from '@/components/SegmentedControl'
 import { addDays, monthRange, todayInColombia, weekRange } from '@/lib/dates'
 import { formatDeliveryDay } from '@/features/orders/order-format'
 import { IncomeCard } from './IncomeCard'
 
+const PERIODS = [
+  { value: 'dia', label: 'Día' },
+  { value: 'semana', label: 'Semana' },
+  { value: 'mes', label: 'Mes' },
+  { value: 'rango', label: 'Rango' },
+] as const
+
+type Period = (typeof PERIODS)[number]['value']
+
 const monthName = new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
-// What the orders are worth, by the day they are delivered: today, this week, this month and a range
-// of the user's choosing
+// The days a period covers around a day, with the name to show for it
+function periodDays(period: Exclude<Period, 'rango'>, day: string, today: string) {
+  if (period === 'dia') {
+    return { from: day, to: day, title: day === today ? 'Hoy' : formatDeliveryDay(day) }
+  }
+  if (period === 'semana') {
+    const week = weekRange(day)
+    const isCurrent = week.from <= today && today <= week.to
+    return {
+      ...week,
+      title: isCurrent ? 'Esta semana' : 'Semana',
+      subtitle: `${formatDeliveryDay(week.from)} – ${formatDeliveryDay(week.to)}`,
+    }
+  }
+  const month = monthRange(day)
+  const isCurrent = month.from <= today && today <= month.to
+  return {
+    ...month,
+    title: isCurrent ? 'Este mes' : monthName.format(new Date(`${month.from}T00:00:00Z`)),
+    ...(isCurrent && { subtitle: monthName.format(new Date(`${month.from}T00:00:00Z`)) }),
+  }
+}
+
+// One day later or earlier, one week, or one month, depending on the period
+function shiftDay(period: Exclude<Period, 'rango'>, day: string, direction: 1 | -1) {
+  if (period === 'dia') return addDays(day, direction)
+  if (period === 'semana') return addDays(day, 7 * direction)
+  const month = monthRange(day)
+  return direction === 1 ? addDays(month.to, 1) : addDays(month.from, -1)
+}
+
+// What the orders are worth, by the day they are delivered, for a day, a week, a month or a range
+// of dates chosen here. The arrows move to the previous or next one; "Hoy" comes back to the current
 export function DashboardPage() {
   const today = todayInColombia()
-  const week = weekRange(today)
-  const month = monthRange(today)
-  const [range, setRange] = useState({ from: month.from, to: today })
+  const [period, setPeriod] = useState<Period>('dia')
+  const [day, setDay] = useState(today)
+  const [range, setRange] = useState({ from: monthRange(today).from, to: today })
+
+  const shown = period === 'rango' ? null : periodDays(period, day, today)
+  const from = shown?.from ?? range.from
+  const to = shown?.to ?? range.to
+  // Whether it is the day, week or month that contains today, where "Volver a hoy" has nothing to do
+  const isCurrent = today >= from && today <= to
 
   return (
     <section className="flex flex-col gap-4">
@@ -24,21 +73,16 @@ export function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <IncomeCard title="Hoy" subtitle={formatDeliveryDay(today)} from={today} to={today} />
-        <IncomeCard
-          title="Esta semana"
-          subtitle={`${formatDeliveryDay(week.from)} – ${formatDeliveryDay(week.to)}`}
-          from={week.from}
-          to={week.to}
+      <div className="flex flex-wrap items-center gap-2">
+        <SegmentedControl
+          label="Período"
+          options={PERIODS}
+          value={period}
+          onChange={setPeriod}
+          className="flex w-full sm:w-auto"
         />
-        <IncomeCard
-          title="Este mes"
-          subtitle={monthName.format(new Date(`${month.from}T00:00:00Z`))}
-          from={month.from}
-          to={month.to}
-        />
-        <IncomeCard title="Rango de fechas" from={range.from} to={range.to}>
+
+        {period === 'rango' ? (
           <div className="flex flex-wrap items-center gap-1.5 text-sm">
             <Label htmlFor="income-from" className="sr-only">
               Desde
@@ -46,7 +90,7 @@ export function DashboardPage() {
             <Input
               id="income-from"
               type="date"
-              className="h-8 w-auto"
+              className="h-8 w-auto bg-card"
               value={range.from}
               max={range.to}
               min={addDays(range.to, -730)}
@@ -59,14 +103,49 @@ export function DashboardPage() {
             <Input
               id="income-to"
               type="date"
-              className="h-8 w-auto"
+              className="h-8 w-auto bg-card"
               value={range.to}
               min={range.from}
               max={addDays(range.from, 730)}
               onChange={(event) => event.target.value && setRange({ ...range, to: event.target.value })}
             />
           </div>
-        </IncomeCard>
+        ) : (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-card"
+              aria-label="Anterior"
+              onClick={() => setDay(shiftDay(period, day, -1))}
+            >
+              <ChevronLeftIcon />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-card"
+              aria-label="Siguiente"
+              onClick={() => setDay(shiftDay(period, day, 1))}
+            >
+              <ChevronRightIcon />
+            </Button>
+            {!isCurrent && (
+              <Button variant="ghost" onClick={() => setDay(today)}>
+                Volver a hoy
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="max-w-md">
+        <IncomeCard
+          title={shown?.title ?? 'Rango de fechas'}
+          {...(shown?.subtitle && { subtitle: shown.subtitle })}
+          from={from}
+          to={to}
+        />
       </div>
     </section>
   )
