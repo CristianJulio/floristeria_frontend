@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -22,7 +23,7 @@ export function DashboardCard({
   children: ReactNode
 }) {
   return (
-    <Card {...(className && { className })}>
+    <Card className={cn('h-full', className)}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}

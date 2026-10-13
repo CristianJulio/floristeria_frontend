@@ -134,11 +134,11 @@ export function DashboardPage() {
       </div>
 
       {/* Every card follows the period chosen above */}
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <IncomeCard from={from} to={to} />
-        <OrdersByStatusCard from={from} to={to} />
         <CollectedByMethodCard from={from} to={to} />
-        <PendingPaymentsCard from={from} to={to} className="lg:col-span-2" />
+        <OrdersByStatusCard from={from} to={to} />
+        <PendingPaymentsCard from={from} to={to} />
       </div>
     </section>
   )

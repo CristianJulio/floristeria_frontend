@@ -33,7 +33,7 @@ export function PendingPaymentsCard({ from, to, className }: { from: string; to:
                 por cobrar en {data.orderCount} {data.orderCount === 1 ? 'pedido' : 'pedidos'}
               </div>
             </div>
-            <ul className="flex flex-col text-sm">
+            <ul className="-mr-2 flex max-h-80 flex-col overflow-y-auto pr-2 text-sm">
               {data.orders.map((order) => (
                 <li key={order.id} className="border-b last:border-b-0">
                   <Link
