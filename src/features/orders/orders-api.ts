@@ -23,6 +23,16 @@ export type OrderItem = {
   surcharge: number
 }
 
+// Something asked for that isn't a catalog product, named and priced on the order
+export type OrderExtra = {
+  id: string
+  name: string
+  price: number
+  quantity: number
+}
+
+export type OrderExtraInput = { name: string; price: number; quantity: number }
+
 // What the API takes for each line; the crown details only go with crowns
 export type OrderItemInput = {
   productId: string
@@ -94,6 +104,7 @@ export type Order = {
   status: OrderStatus
   cancellationReason: string | null
   items: OrderItem[]
+  extras: OrderExtra[]
   payments: OrderPayment[]
   balance: OrderBalance
   createdAt: string
@@ -151,6 +162,7 @@ export type CreateOrderInput = {
   deliveryTimeTo?: string
   deliveryFee: number
   items: OrderItemInput[]
+  extras: OrderExtraInput[]
 }
 
 export async function createOrder(input: CreateOrderInput) {
@@ -184,8 +196,8 @@ export async function updateOrderDetails(id: string, changes: UpdateOrderInput) 
 }
 
 // Replaces the whole list; the backend prices every item at today's catalog price
-export async function replaceOrderItems(id: string, items: OrderItemInput[]) {
-  const body = await apiFetch<{ data: Order }>(`/api/orders/${id}/items`, { method: 'PUT', body: { items } })
+export async function replaceOrderItems(id: string, items: OrderItemInput[], extras: OrderExtraInput[]) {
+  const body = await apiFetch<{ data: Order }>(`/api/orders/${id}/items`, { method: 'PUT', body: { items, extras } })
   return body.data
 }
 

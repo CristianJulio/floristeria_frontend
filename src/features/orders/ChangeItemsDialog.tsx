@@ -15,7 +15,14 @@ import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
 import { fetchProduct } from '@/features/products/products-api'
 import { surchargeOf } from './order-format'
-import { toItemInput, type OrderFormValues } from './order-form-schema'
+import {
+  extrasTotal,
+  extrasValid,
+  toExtraInput,
+  toItemInput,
+  type FormExtra,
+  type OrderFormValues,
+} from './order-form-schema'
 import { replaceOrderItems, type Order } from './orders-api'
 import { OrderItemsEditor } from './OrderItemsEditor'
 
@@ -31,6 +38,7 @@ type Props = {
 export function ChangeItemsDialog({ order, onClose }: Props) {
   const queryClient = useQueryClient()
   const [edited, setEdited] = useState<Item[] | null>(null)
+  const [editedExtras, setEditedExtras] = useState<FormExtra[] | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const productQueries = useQueries({
@@ -60,6 +68,13 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
     quantity: item.quantity,
   }))
   const items = edited ?? initialItems
+  const initialExtras: FormExtra[] = order.extras.map((extra) => ({
+    key: extra.id,
+    name: extra.name,
+    price: String(extra.price),
+    quantity: extra.quantity,
+  }))
+  const extras = editedExtras ?? initialExtras
 
   const unavailableIds = new Set(
     items.filter((item) => currentProducts.get(item.productId)?.available === false).map((item) => item.productId),
@@ -70,18 +85,20 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
   })
 
   // The delivery fee stays the same; only the products change here
-  const newTotal = items.reduce((sum, item) => sum + item.price * item.quantity + surchargeOf(item), order.deliveryFee)
+  const newTotal = items.reduce((sum, item) => sum + item.price * item.quantity + surchargeOf(item), order.deliveryFee) +
+    extrasTotal(extras)
   const netPaid = order.balance.netPaid
   const crownsIncomplete = items.some(
     (item) => item.category === 'CORONAS' && (!item.deceasedName.trim() || !item.roomNumber.trim()),
   )
-  const canSave = !loading && !loadFailed && items.length > 0 && unavailableIds.size === 0 && !crownsIncomplete
+  const canSave = !loading && !loadFailed && items.length > 0 && unavailableIds.size === 0 && !crownsIncomplete && extrasValid(extras)
 
   const mutation = useMutation({
     mutationFn: () =>
       replaceOrderItems(
         order.id,
         items.map(toItemInput),
+        extras.map(toExtraInput),
       ),
     onSuccess: (updated) => {
       queryClient.setQueryData(['order', order.id], updated)
@@ -120,7 +137,14 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
                 Algunos precios cambiaron desde que se tomó el pedido; aquí ya se muestran los actuales.
               </p>
             )}
-            <OrderItemsEditor items={items} onChange={setEdited} unavailableIds={unavailableIds} deliveryFee={order.deliveryFee} />
+            <OrderItemsEditor
+              items={items}
+              onChange={setEdited}
+              extras={extras}
+              onExtrasChange={setEditedExtras}
+              unavailableIds={unavailableIds}
+              deliveryFee={order.deliveryFee}
+            />
             <div className="flex flex-col gap-1 text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>Total</span>

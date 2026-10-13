@@ -89,12 +89,21 @@ export function NewOrderPage() {
                   control={control}
                   name="items"
                   render={({ field, fieldState }) => (
-                    <OrderItemsEditor
-                      items={field.value}
-                      onChange={field.onChange}
-                      deliveryFee={deliveryFee}
-                      itemErrors={errors.items as ComponentProps<typeof OrderItemsEditor>['itemErrors']}
-                      {...(fieldState.error?.message && { error: fieldState.error.message })}
+                    <Controller
+                      control={control}
+                      name="extras"
+                      render={({ field: extrasField }) => (
+                        <OrderItemsEditor
+                          items={field.value}
+                          onChange={field.onChange}
+                          extras={extrasField.value}
+                          onExtrasChange={extrasField.onChange}
+                          deliveryFee={deliveryFee}
+                          itemErrors={errors.items as ComponentProps<typeof OrderItemsEditor>['itemErrors']}
+                          extraErrors={errors.extras as ComponentProps<typeof OrderItemsEditor>['extraErrors']}
+                          {...(fieldState.error?.message && { error: fieldState.error.message })}
+                        />
+                      )}
                     />
                   )}
                 />

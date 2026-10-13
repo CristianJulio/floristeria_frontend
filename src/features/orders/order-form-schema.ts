@@ -11,7 +11,7 @@ import {
   toInternationalPhone,
 } from '@/lib/phone'
 import { PRODUCT_CATEGORIES } from '@/features/products/products-api'
-import type { CreateOrderInput, Order, OrderItemInput, UpdateOrderInput } from './orders-api'
+import type { CreateOrderInput, Order, OrderExtraInput, OrderItemInput, UpdateOrderInput } from './orders-api'
 
 // The form fields behind each contact: who is responsible for the order, and the optional one
 // for the recipient. The contact input component works with either set
@@ -166,6 +166,27 @@ export function toItemInput(item: OrderFormValues['items'][number]): OrderItemIn
   }
 }
 
+export type FormExtra = {
+  key: string
+  name: string
+  price: string
+  quantity: number
+}
+
+export const toExtraInput = (extra: FormExtra): OrderExtraInput => ({
+  name: extra.name.trim(),
+  price: Number(extra.price),
+  quantity: extra.quantity,
+})
+
+// What the extras cost as typed so far; an unfinished price counts as 0 until it's fixed
+export const extrasTotal = (extras: FormExtra[]) =>
+  extras.reduce((sum, extra) => sum + typedDeliveryFee(extra.price) * extra.quantity, 0)
+
+// Every extra has a name and a price made of digits
+export const extrasValid = (extras: FormExtra[]) =>
+  extras.every((extra) => extra.name.trim() && /^\d+$/.test(extra.price.trim()) && Number(extra.price) <= 2_147_483_647)
+
 export const orderFormSchema = orderDetailsFields
   .extend({
     items: z
@@ -187,6 +208,21 @@ export const orderFormSchema = orderDetailsFields
         }),
       )
       .min(1, 'Agrega al menos un producto'),
+    // Extras that aren't catalog products; the price is typed as text, like the other amounts
+    extras: z
+      .array(
+        z.object({
+          key: z.string(),
+          name: z.string().trim().min(1, 'Escribe el nombre').max(80, 'Máximo 80 caracteres'),
+          price: z
+            .string()
+            .trim()
+            .regex(/^\d+$/, 'Escribe el precio, solo números')
+            .refine((value) => Number(value) <= 2_147_483_647, 'El valor es demasiado alto'),
+          quantity: z.number().int().min(1, 'Mínimo 1').max(999, 'Máximo 999'),
+        }),
+      )
+      .max(50, 'Máximo 50 adicionales'),
   })
   .superRefine((values, ctx) => {
     checkDetails(values, ctx)
@@ -226,6 +262,7 @@ export function emptyOrderForm(): OrderFormValues {
     deliveryTimeTo: '',
     deliveryFee: '0',
     items: [],
+    extras: [],
   }
 }
 
@@ -307,6 +344,7 @@ export function toCreateOrderInput(values: OrderFormValues): CreateOrderInput {
     deliveryTimeTo: values.deliveryTimeTo || undefined,
     deliveryFee: Number(values.deliveryFee),
     items: values.items.map(toItemInput),
+    extras: values.extras.map(toExtraInput),
   }
 }
 

@@ -5,13 +5,16 @@ import { CharCount } from '@/components/CharCount'
 import { Input } from '@/components/ui/input'
 import type { Product } from '@/features/products/products-api'
 import { CROWN_RIBBON_AND_CARD_SURCHARGE, formatMoney, surchargeOf } from './order-format'
-import type { OrderFormValues } from './order-form-schema'
+import { extrasTotal, typedDeliveryFee, type FormExtra, type OrderFormValues } from './order-form-schema'
 import { ProductCatalogDialog } from './ProductCatalogDialog'
 
 type Item = OrderFormValues['items'][number]
 
 // What the form reports for each line's crown fields, by position in the list
 type ItemErrors = ({ deceasedName?: { message?: string }; roomNumber?: { message?: string } } | undefined)[]
+
+// What the form reports for each extra's fields, by position in the list
+type ExtraErrors = ({ name?: { message?: string }; price?: { message?: string } } | undefined)[]
 
 const itemTotal = (item: Item) => item.price * item.quantity + surchargeOf(item)
 
@@ -20,6 +23,10 @@ type Props = {
   onChange: (items: Item[]) => void
   error?: string
   itemErrors?: ItemErrors | undefined
+  // Extras: things asked for that aren't catalog products, named and priced by hand
+  extras: FormExtra[]
+  onExtrasChange: (extras: FormExtra[]) => void
+  extraErrors?: ExtraErrors | undefined
   // Products that can no longer be sold; they're highlighted so staff remove or replace them
   unavailableIds?: Set<string>
   // Added to the products in the total; 0 when the order has no fee
@@ -110,8 +117,18 @@ function CrownDetails({
 
 // The products list of an order form: a catalog to add from, – / + to change quantities, × to remove.
 // Crowns are the exception: each one is its own line, with its own details instead of a quantity
-export function OrderItemsEditor({ items, onChange, error, itemErrors, unavailableIds, deliveryFee = 0 }: Props) {
-  const subtotal = items.reduce((sum, item) => sum + itemTotal(item), 0)
+export function OrderItemsEditor({
+  items,
+  onChange,
+  error,
+  itemErrors,
+  extras,
+  onExtrasChange,
+  extraErrors,
+  unavailableIds,
+  deliveryFee = 0,
+}: Props) {
+  const subtotal = items.reduce((sum, item) => sum + itemTotal(item), 0) + extrasTotal(extras)
   const total = subtotal + deliveryFee
   const [catalogOpen, setCatalogOpen] = useState(false)
 
@@ -145,6 +162,16 @@ export function OrderItemsEditor({ items, onChange, error, itemErrors, unavailab
     onChange(items.map((item) => (item.key === key ? { ...item, ...changes } : item)))
   }
 
+  function addExtra() {
+    // Not crypto.randomUUID(), which only exists on secure (https) pages
+    const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    onExtrasChange([...extras, { key, name: '', price: '', quantity: 1 }])
+  }
+
+  function updateExtra(key: string, changes: Partial<FormExtra>) {
+    onExtrasChange(extras.map((extra) => (extra.key === key ? { ...extra, ...changes } : extra)))
+  }
+
   function remove(key: string) {
     onChange(items.filter((item) => item.key !== key))
   }
@@ -165,10 +192,16 @@ export function OrderItemsEditor({ items, onChange, error, itemErrors, unavailab
 
   return (
     <div className="flex flex-col gap-3">
-      <Button type="button" variant="outline" onClick={() => setCatalogOpen(true)}>
-        <PlusIcon aria-hidden />
-        Agregar productos
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" className="flex-1" onClick={() => setCatalogOpen(true)}>
+          <PlusIcon aria-hidden />
+          Agregar productos
+        </Button>
+        <Button type="button" variant="outline" className="flex-1" onClick={addExtra}>
+          <PlusIcon aria-hidden />
+          Agregar adicional
+        </Button>
+      </div>
       {catalogOpen && (
         <ProductCatalogDialog
           quantities={quantities}
@@ -247,6 +280,87 @@ export function OrderItemsEditor({ items, onChange, error, itemErrors, unavailab
             )
           })}
         </ul>
+      )}
+
+      {extras.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Adicionales</h3>
+          <ul className="text-sm">
+            {extras.map((extra, index) => {
+              const errors = extraErrors?.[index]
+              return (
+                <li key={extra.key} className="flex flex-col gap-1.5 border-b py-2.5 last:border-b-0">
+                  <div className="flex items-start gap-2">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <Input
+                        aria-label="Nombre del adicional"
+                        placeholder="Ej.: Globo de cumpleaños"
+                        maxLength={80}
+                        className="h-8"
+                        aria-invalid={!!errors?.name}
+                        value={extra.name}
+                        onChange={(event) => updateExtra(extra.key, { name: event.target.value })}
+                      />
+                      {errors?.name?.message && <p className="text-xs text-destructive">{errors.name.message}</p>}
+                    </div>
+                    <Button
+                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
+                      className="mt-1 text-muted-foreground"
+                      aria-label={`Quitar adicional ${extra.name}`}
+                      onClick={() => onExtrasChange(extras.filter((other) => other.key !== extra.key))}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="flex flex-1 flex-col gap-1">
+                      <Input
+                        aria-label="Precio del adicional"
+                        placeholder="Precio c/u"
+                        inputMode="numeric"
+                        className="h-8 w-32"
+                        aria-invalid={!!errors?.price}
+                        value={extra.price}
+                        onChange={(event) => updateExtra(extra.key, { price: event.target.value })}
+                      />
+                      {errors?.price?.message && <p className="text-xs text-destructive">{errors.price.message}</p>}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-1">
+                      <Button
+                        type="button"
+                        size="icon-xs"
+                        variant="outline"
+                        aria-label={`Quitar una unidad de ${extra.name || 'adicional'}`}
+                        disabled={extra.quantity <= 1}
+                        onClick={() => updateExtra(extra.key, { quantity: extra.quantity - 1 })}
+                      >
+                        –
+                      </Button>
+                      <span className="w-7 text-center tabular-nums" aria-label="Cantidad">
+                        {extra.quantity}
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon-xs"
+                        variant="outline"
+                        aria-label={`Agregar una unidad de ${extra.name || 'adicional'}`}
+                        disabled={extra.quantity >= 999}
+                        onClick={() => updateExtra(extra.key, { quantity: extra.quantity + 1 })}
+                      >
+                        +
+                      </Button>
+                    </div>
+                    <span className="mt-1 w-20 text-right tabular-nums">
+                      {formatMoney(typedDeliveryFee(extra.price) * extra.quantity)}
+                    </span>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}

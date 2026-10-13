@@ -139,6 +139,14 @@ function OrderSummaryCard({ order }: { order: Order }) {
               <span className="tabular-nums">{formatMoney(item.price * item.quantity + item.surcharge)}</span>
             </li>
           ))}
+          {order.extras.map((extra) => (
+            <li key={extra.id} className="flex justify-between gap-2 border-b py-2 last:border-b-0">
+              <span>
+                {extra.quantity}× {extra.name}
+              </span>
+              <span className="tabular-nums">{formatMoney(extra.price * extra.quantity)}</span>
+            </li>
+          ))}
         </ul>
         {deliveryFee > 0 && (
           <div className="flex justify-between border-t pt-3 text-sm text-muted-foreground">
