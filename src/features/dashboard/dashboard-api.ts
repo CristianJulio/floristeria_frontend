@@ -2,13 +2,15 @@ import { apiFetch } from '@/lib/api-client'
 import type { OrderStatus, PaymentMethod } from '@/features/orders/orders-api'
 
 // What the orders delivered in a range are worth. Items are products and extras; delivery is the
-// delivery fees. Collected is what has been paid (minus refunds) on those same orders
+// delivery fees; retainedFromCancelled is what was kept from cancelled orders, which are worth only
+// that. Collected is what has been paid (minus refunds) on those same orders
 export type Income = {
   from: string
   to: string
   orderCount: number
   items: number
   delivery: number
+  retainedFromCancelled: number
   total: number
   collected: number
   pendingPayment: number

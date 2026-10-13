@@ -42,6 +42,7 @@ export function IncomeCard({ from, to }: { from: string; to: string }) {
           <div className="flex flex-col gap-1.5 text-sm">
             <Row label="Pedidos" value={data.items} />
             <Row label="Domicilios" value={data.delivery} />
+            {data.retainedFromCancelled > 0 && <Row label="Retenido de cancelados" value={data.retainedFromCancelled} />}
           </div>
           <div className="flex flex-col gap-1.5 border-t pt-3 text-sm">
             <Row label="Cobrado" value={data.collected} strong />
