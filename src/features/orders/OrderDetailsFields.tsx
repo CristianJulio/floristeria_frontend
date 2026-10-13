@@ -21,17 +21,27 @@ export function FormField({
   label,
   error,
   className,
+  action,
   children,
 }: {
   id?: string
   label: string
   error?: string | undefined
   className?: string
+  // Shown at the end of the label row, e.g. a toggle that changes the field
+  action?: ReactNode
   children: ReactNode
 }) {
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <Label htmlFor={id}>{label}</Label>
+      {action ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Label htmlFor={id}>{label}</Label>
+          {action}
+        </div>
+      ) : (
+        <Label htmlFor={id}>{label}</Label>
+      )}
       {children}
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
@@ -176,12 +186,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
           <FormField
             id={contactType === 'PHONE' ? 'phoneNumber' : 'whatsappUsername'}
             label="Contacto del responsable"
-            error={
-              contactType === 'PHONE'
-                ? (errors.phoneOtherCode?.message ?? errors.phoneNumber?.message)
-                : errors.whatsappUsername?.message
-            }
-          >
+            action={
             <div className="flex gap-2" role="radiogroup" aria-label="Tipo de contacto">
               {CONTACT_OPTIONS.map((option) => (
                 <Button
@@ -197,6 +202,13 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
                 </Button>
               ))}
             </div>
+            }
+            error={
+              contactType === 'PHONE'
+                ? (errors.phoneOtherCode?.message ?? errors.phoneNumber?.message)
+                : errors.whatsappUsername?.message
+            }
+          >
             {contactType === 'WHATSAPP_USERNAME' ? (
               <div className="relative">
                 <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground">
