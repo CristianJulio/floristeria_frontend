@@ -180,7 +180,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
           <CardTitle>Contacto</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <FormField id="senderName" label="Remitente" error={errors.senderName?.message}>
+          <FormField id="senderName" label="De parte de" error={errors.senderName?.message}>
             <Input id="senderName" aria-invalid={!!errors.senderName} {...register('senderName')} />
           </FormField>
           <FormField
