@@ -91,7 +91,7 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
   const crownsIncomplete = items.some(
     (item) => item.category === 'CORONAS' && (!item.deceasedName.trim() || !item.roomNumber.trim()),
   )
-  const canSave = !loading && !loadFailed && items.length > 0 && unavailableIds.size === 0 && !crownsIncomplete && extrasValid(extras)
+  const canSave = !loading && !loadFailed && items.length + extras.length > 0 && unavailableIds.size === 0 && !crownsIncomplete && extrasValid(extras)
 
   const mutation = useMutation({
     mutationFn: () =>

@@ -206,8 +206,7 @@ export const orderFormSchema = orderDetailsFields
           ribbonText: z.string().trim().max(100, 'Máximo 100 caracteres'),
           withCard: z.boolean(),
         }),
-      )
-      .min(1, 'Agrega al menos un producto'),
+      ),
     // Extras that aren't catalog products; the price is typed as text, like the other amounts
     extras: z
       .array(
@@ -227,6 +226,10 @@ export const orderFormSchema = orderDetailsFields
   .superRefine((values, ctx) => {
     checkDetails(values, ctx)
     checkCrowns(values.items, ctx)
+    // An order of only extras is fine; an empty one is not
+    if (values.items.length + values.extras.length === 0) {
+      ctx.addIssue({ code: 'custom', path: ['items'], message: 'Agrega al menos un producto o un adicional' })
+    }
   })
 
 export type OrderFormValues = z.infer<typeof orderFormSchema>
