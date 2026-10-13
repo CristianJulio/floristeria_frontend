@@ -26,7 +26,7 @@ const orderDetailsFields = z.object({
   neighborhood: optional(30),
   city: z.enum(CITIES, { error: 'Elige la ciudad' }),
   deliveryNotes: optional(255),
-  cardMessage: optional(255),
+  cardMessage: optional(1000),
   senderName: required(50),
   contactType: z.enum(CONTACT_TYPES),
   whatsappUsername: z.string(),

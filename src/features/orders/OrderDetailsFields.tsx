@@ -272,12 +272,12 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
             <Textarea
               id="cardMessage"
               rows={5}
-              maxLength={255}
+              maxLength={1000}
               placeholder="Escribe el mensaje tal como va en la tarjeta"
               className="min-h-32"
               {...register('cardMessage')}
             />
-            <span className="self-end text-xs text-muted-foreground tabular-nums">{cardMessage.length}/255</span>
+            <span className="self-end text-xs text-muted-foreground tabular-nums">{cardMessage.length}/1000</span>
           </FormField>
         </CardContent>
       </Card>
