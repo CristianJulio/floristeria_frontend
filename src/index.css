@@ -75,6 +75,13 @@
     --accent-foreground: #214d38;
     --petal: #f7e1e8;
     --petal-foreground: #9b3f5c;
+    /* One colour per order status, for dots and charts. Checked as a set against the card surface */
+    --status-pending: #ca8a04;
+    --status-preparing: #be185d;
+    --status-ready: #7c3aed;
+    --status-out: #0284c7;
+    --status-delivered: #15803d;
+    --status-cancelled: #dc2626;
     --destructive: oklch(0.577 0.245 27.325);
     --border: #dde4dd;
     --input: #cfd9d0;
@@ -96,6 +103,7 @@
 }
 
 .dark {
+    --status-pending: #d97706;
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);

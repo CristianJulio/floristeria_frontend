@@ -46,13 +46,22 @@ export const STATUS_CLASSES: Record<OrderStatus, string> = {
 }
 
 // Small coloured dot for each status, used in the status filter chips
+export const STATUS_COLORS: Record<OrderStatus, string> = {
+  PENDING: 'var(--status-pending)',
+  PREPARING: 'var(--status-preparing)',
+  READY: 'var(--status-ready)',
+  OUT_FOR_DELIVERY: 'var(--status-out)',
+  DELIVERED: 'var(--status-delivered)',
+  CANCELLED: 'var(--status-cancelled)',
+}
+
 export const STATUS_DOT_CLASSES: Record<OrderStatus, string> = {
-  PENDING: 'bg-amber-500',
-  PREPARING: 'bg-petal-foreground',
-  READY: 'bg-violet-500',
-  OUT_FOR_DELIVERY: 'bg-blue-500',
-  DELIVERED: 'bg-green-600',
-  CANCELLED: 'bg-red-500',
+  PENDING: 'bg-[var(--status-pending)]',
+  PREPARING: 'bg-[var(--status-preparing)]',
+  READY: 'bg-[var(--status-ready)]',
+  OUT_FOR_DELIVERY: 'bg-[var(--status-out)]',
+  DELIVERED: 'bg-[var(--status-delivered)]',
+  CANCELLED: 'bg-[var(--status-cancelled)]',
 }
 
 import { formatMoney } from '@/lib/money'
