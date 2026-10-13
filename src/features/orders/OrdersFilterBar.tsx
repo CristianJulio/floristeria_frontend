@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { cn } from 'cn'
 import { ChevronDownIcon, SlidersHorizontalIcon } from 'lucide-react'
 import { SearchInput } from '@/components/SearchInput'
-import { SegmentedControl } from '@/components/SegmentedControl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -79,40 +78,49 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* The everyday controls: the day and the search. Everything else is under "Filtros" */}
-      <div className="flex flex-wrap items-center gap-2">
-        <SegmentedControl
-          label="Fecha de entrega"
-          options={quickRanges}
-          value={activeRange?.value ?? null}
-          onChange={(value) => {
-            const range = quickRanges.find((r) => r.value === value)!
-            onChange({ deliveryFrom: range.from, deliveryTo: range.to })
-          }}
-          className="flex w-full sm:w-auto"
+      {/* The everyday controls: the search and the day. Everything else is under "Filtros" */}
+      <div className="flex items-center gap-2">
+        <SearchInput
+          label="Buscar pedidos"
+          placeholder="Nombre o teléfono"
+          className="min-w-0 flex-1"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
         />
+        <Button
+          variant={activeCount > 0 ? 'secondary' : 'outline'}
+          className={cn('h-8', activeCount === 0 && 'bg-card')}
+          aria-expanded={open}
+          aria-controls="order-filters"
+          onClick={() => setOpen((value) => !value)}
+        >
+          <SlidersHorizontalIcon aria-hidden />
+          Filtros
+          {activeCount > 0 && <span className="tabular-nums">· {activeCount}</span>}
+          <ChevronDownIcon className={cn('transition-transform', open && 'rotate-180')} aria-hidden />
+        </Button>
+      </div>
 
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
-          <SearchInput
-            label="Buscar pedidos"
-            placeholder="Nombre o teléfono"
-            className="min-w-0 flex-1 sm:w-72"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
+      {/* One line that scrolls sideways on phones instead of wrapping into several rows */}
+      <div
+        role="radiogroup"
+        aria-label="Fecha de entrega"
+        className="-mx-4 flex max-w-full gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
+      >
+        {quickRanges.map((range) => (
           <Button
-            variant={activeCount > 0 ? 'secondary' : 'outline'}
-            className={cn('h-8', activeCount === 0 && 'bg-card')}
-            aria-expanded={open}
-            aria-controls="order-filters"
-            onClick={() => setOpen((value) => !value)}
+            key={range.value}
+            type="button"
+            size="sm"
+            role="radio"
+            aria-checked={activeRange?.value === range.value}
+            variant={activeRange?.value === range.value ? 'default' : 'outline'}
+            className="shrink-0 rounded-full"
+            onClick={() => onChange({ deliveryFrom: range.from, deliveryTo: range.to })}
           >
-            <SlidersHorizontalIcon aria-hidden />
-            Filtros
-            {activeCount > 0 && <span className="tabular-nums">· {activeCount}</span>}
-            <ChevronDownIcon className={cn('transition-transform', open && 'rotate-180')} aria-hidden />
+            {range.label}
           </Button>
-        </div>
+        ))}
       </div>
 
       {open && (
