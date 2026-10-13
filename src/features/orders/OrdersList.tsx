@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router'
 import { cn } from 'cn'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   formatAddress,
@@ -41,7 +42,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
   const detailPath = (order: Order) => `/pedidos/${order.id}`
 
   return (
-    <>
+    <TooltipProvider>
       <div className="hidden overflow-hidden rounded-xl border bg-card md:block">
         <Table>
           <TableHeader>
@@ -75,9 +76,14 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                   <div className="text-[13px] text-muted-foreground">De {order.senderName}</div>
                 </TableCell>
                 <TableCell className="max-w-64">
-                  <div className="truncate" title={formatAddress(order)}>
-                    {formatAddress(order)}
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger render={<div className="truncate" />}>{formatAddress(order)}</TooltipTrigger>
+                    <TooltipContent>
+                      {formatAddress(order)}
+                      <br />
+                      {formatPlace(order)}
+                    </TooltipContent>
+                  </Tooltip>
                   <div className="truncate text-[13px] text-muted-foreground">{formatPlace(order)}</div>
                 </TableCell>
                 <TableCell className="max-w-64 truncate text-muted-foreground" title={formatItems(order)}>
@@ -131,6 +137,6 @@ export function OrdersList({ orders }: { orders: Order[] }) {
           </li>
         ))}
       </ul>
-    </>
+    </TooltipProvider>
   )
 }
