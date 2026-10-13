@@ -9,7 +9,6 @@ import { PackageSearchIcon } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { PaginationControls } from '@/components/PaginationControls'
 import { SearchInput } from '@/components/SearchInput'
-import { SegmentedControl } from '@/components/SegmentedControl'
 import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { apiErrorMessage } from '@/lib/api-errors'
@@ -21,12 +20,6 @@ import { CATEGORY_LABELS, PRODUCT_CATEGORIES, fetchProducts,
 } from './products-api'
 import { ProductFormDialog } from './ProductFormDialog'
 import { ProductPlaceholder } from './ProductPlaceholder'
-
-const AVAILABILITY_FILTERS = [
-  { value: 'todos', label: 'Todos', available: undefined },
-  { value: 'si', label: 'Disponibles', available: true },
-  { value: 'no', label: 'No disponibles', available: false },
-] as const
 
 // In the address as the label in lowercase, e.g. ?categoria=ramos
 const CATEGORY_FILTERS = [
@@ -112,7 +105,7 @@ export function ProductsPage() {
   const [dialogProduct, setDialogProduct] = useState<Product | 'new' | null>(null)
 
   const search = params.get('buscar') ?? ''
-  const availability = AVAILABILITY_FILTERS.find((f) => f.value === params.get('disponibles')) ?? AVAILABILITY_FILTERS[0]
+  const onlyAvailable = params.get('disponibles') === 'si'
   const category = CATEGORY_FILTERS.find((f) => f.value === params.get('categoria')) ?? CATEGORY_FILTERS[0]
   const sort = SORT_OPTIONS.find((o) => o.value === params.get('orden')) ?? SORT_OPTIONS[0]!
   const page = Math.max(1, Number(params.get('pagina')) || 1)
@@ -134,7 +127,7 @@ export function ProductsPage() {
     return () => clearTimeout(timer)
   })
 
-  const filters = { search, available: availability.available, category: category.category, sort: sort.sort, page, pageSize: 20 }
+  const filters = { search, available: onlyAvailable ? true : undefined, category: category.category, sort: sort.sort, page, pageSize: 20 }
   const { data, isPending, isError, isFetching, refetch } = useQuery({
     queryKey: ['products', filters],
     queryFn: () => fetchProducts(filters),
@@ -157,40 +150,58 @@ export function ProductsPage() {
         {can('products.create') && <Button onClick={() => setDialogProduct('new')}>Nuevo producto</Button>}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <SegmentedControl
-          label="Disponibilidad"
-          options={AVAILABILITY_FILTERS}
-          value={availability.value}
-          onChange={(value) => setParam('disponibles', value === 'todos' ? null : value)}
-          className="flex w-full sm:w-auto"
-        />
-        <SegmentedControl
-          label="Categoría"
-          options={CATEGORY_FILTERS}
-          value={category.value}
-          onChange={(value) => setParam('categoria', value === 'todos' ? null : value)}
-          className="flex w-full sm:w-auto"
-        />
-        <select
-          aria-label="Ordenar por"
-          value={sort.value}
-          onChange={(event) => setParam('orden', event.target.value === SORT_OPTIONS[0]!.value ? null : event.target.value)}
-          className="h-8 w-full rounded-lg border border-input bg-card px-2 text-sm sm:w-auto"
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <SearchInput
-          label="Buscar productos"
-          placeholder="Nombre del producto"
-          className="w-full sm:w-72"
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-        />
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            label="Buscar productos"
+            placeholder="Buscar producto…"
+            className="min-w-0 flex-1 basis-56"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+          />
+          <select
+            aria-label="Ordenar por"
+            value={sort.value}
+            onChange={(event) =>
+              setParam('orden', event.target.value === SORT_OPTIONS[0]!.value ? null : event.target.value)
+            }
+            className="h-8 w-full rounded-lg border border-input bg-card px-2 text-sm sm:w-auto"
+          >
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          {/* One line that scrolls sideways on phones instead of wrapping into several rows */}
+          <div
+            role="radiogroup"
+            aria-label="Categoría"
+            className="-mx-4 flex max-w-full gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
+          >
+            {CATEGORY_FILTERS.map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                role="radio"
+                aria-checked={category.value === option.value}
+                variant={category.value === option.value ? 'default' : 'outline'}
+                className="shrink-0 rounded-full"
+                onClick={() => setParam('categoria', option.value === 'todos' ? null : option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <Switch checked={onlyAvailable} onCheckedChange={(value) => setParam('disponibles', value ? 'si' : null)} />
+            Solo disponibles
+          </label>
+        </div>
       </div>
 
       {isPending ? (
