@@ -49,7 +49,7 @@ function DeliveryCard({ order }: { order: Order }) {
           ) : (
             <Field label="Usuario de WhatsApp">@{order.responsiblePhone}</Field>
           )}
-          <Field label="De parte de">{order.senderName}</Field>
+          <Field label="Enviado por">{order.senderName}</Field>
         </dl>
       </CardContent>
     </Card>
