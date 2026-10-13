@@ -50,7 +50,7 @@ const orderDetailsFields = z.object({
   recipientPhoneNumber: z.string(),
   addressLine1: required(40),
   addressLine2: optional(100),
-  neighborhood: optional(30),
+  neighborhood: optional(100),
   city: z.enum(CITIES, { error: 'Elige la ciudad' }),
   deliveryNotes: optional(255),
   cardMessage: optional(1000),
