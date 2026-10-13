@@ -11,6 +11,11 @@ import { OTHER_COUNTRY, PHONE_COUNTRIES } from '@/lib/phone'
 import { formatMoney } from './order-format'
 import { CITIES, type OrderDetailsFormValues } from './order-form-schema'
 
+const CONTACT_OPTIONS = [
+  { value: 'PHONE', label: 'Teléfono' },
+  { value: 'WHATSAPP_USERNAME', label: 'WhatsApp' },
+] as const
+
 export function FormField({
   id,
   label,
@@ -170,21 +175,28 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
           </FormField>
           <FormField
             id={contactType === 'PHONE' ? 'phoneNumber' : 'whatsappUsername'}
-            label="Contacto"
+            label="Contacto del responsable"
             error={
               contactType === 'PHONE'
                 ? (errors.phoneOtherCode?.message ?? errors.phoneNumber?.message)
                 : errors.whatsappUsername?.message
             }
           >
-            <select
-              aria-label="Tipo de contacto"
-              className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
-              {...register('contactType')}
-            >
-              <option value="PHONE">Teléfono</option>
-              <option value="WHATSAPP_USERNAME">Usuario de WhatsApp</option>
-            </select>
+            <div className="flex gap-2" role="radiogroup" aria-label="Tipo de contacto">
+              {CONTACT_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  size="sm"
+                  role="radio"
+                  aria-checked={contactType === option.value}
+                  variant={contactType === option.value ? 'default' : 'outline'}
+                  onClick={() => setValue('contactType', option.value, { shouldValidate: true, shouldDirty: true })}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
             {contactType === 'WHATSAPP_USERNAME' ? (
               <div className="relative">
                 <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground">
