@@ -22,7 +22,7 @@ const time = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d)?$/, 'Hora no válida')
 const orderDetailsFields = z.object({
   recipientName: required(50),
   addressLine1: required(40),
-  addressLine2: optional(40),
+  addressLine2: optional(100),
   neighborhood: optional(30),
   city: z.enum(CITIES, { error: 'Elige la ciudad' }),
   deliveryNotes: optional(255),
