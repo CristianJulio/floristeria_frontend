@@ -20,6 +20,7 @@ import {
 import { fetchOrder, updateOrderDetails, type Order } from './orders-api'
 import { OrderDetailsFields } from './OrderDetailsFields'
 import { isOrderEditable } from './order-rules'
+import { CrownLines } from './CrownLines'
 import { formatMoney } from './order-format'
 import { OrderStatusBadge } from './OrderStatusBadge'
 
@@ -130,11 +131,12 @@ function OrderSummaryCard({ order }: { order: Order }) {
       <CardContent className="flex flex-col gap-3">
         <ul className="text-sm">
           {order.items.map((item) => (
-            <li key={item.productId} className="flex justify-between gap-2 border-b py-2 last:border-b-0">
+            <li key={item.id} className="flex justify-between gap-2 border-b py-2 last:border-b-0">
               <span>
                 {item.quantity}× {item.productName}
+                <CrownLines item={item} />
               </span>
-              <span className="tabular-nums">{formatMoney(item.price * item.quantity)}</span>
+              <span className="tabular-nums">{formatMoney(item.price * item.quantity + item.surcharge)}</span>
             </li>
           ))}
         </ul>

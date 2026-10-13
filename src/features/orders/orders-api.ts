@@ -1,14 +1,34 @@
 import { apiFetch } from '@/lib/api-client'
 import type { ContactType } from '@/lib/phone'
+import type { ProductCategory } from '@/features/products/products-api'
 
 export const ORDER_STATUSES = ['PENDING', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'] as const
 export type OrderStatus = (typeof ORDER_STATUSES)[number]
 
+// A line of the order. Crowns are one line each and carry the details below
 export type OrderItem = {
+  id: string
   productId: string
   productName: string
+  category: ProductCategory
   price: number
   quantity: number
+  deceasedName: string | null
+  roomNumber: string | null
+  withRibbon: boolean
+  withCard: boolean
+  // What carrying both ribbon and card adds to the line
+  surcharge: number
+}
+
+// What the API takes for each line; the crown details only go with crowns
+export type OrderItemInput = {
+  productId: string
+  quantity: number
+  deceasedName?: string
+  roomNumber?: string
+  withRibbon?: boolean
+  withCard?: boolean
 }
 
 export type OrderBalance = {
@@ -123,7 +143,7 @@ export type CreateOrderInput = {
   deliveryTimeFrom?: string
   deliveryTimeTo?: string
   deliveryFee: number
-  items: { productId: string; quantity: number }[]
+  items: OrderItemInput[]
 }
 
 export async function createOrder(input: CreateOrderInput) {
@@ -155,7 +175,7 @@ export async function updateOrderDetails(id: string, changes: UpdateOrderInput) 
 }
 
 // Replaces the whole list; the backend prices every item at today's catalog price
-export async function replaceOrderItems(id: string, items: { productId: string; quantity: number }[]) {
+export async function replaceOrderItems(id: string, items: OrderItemInput[]) {
   const body = await apiFetch<{ data: Order }>(`/api/orders/${id}/items`, { method: 'PUT', body: { items } })
   return body.data
 }

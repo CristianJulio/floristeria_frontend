@@ -9,7 +9,8 @@ import {
   onlyDigits,
   toInternationalPhone,
 } from '@/lib/phone'
-import type { CreateOrderInput, Order, UpdateOrderInput } from './orders-api'
+import { PRODUCT_CATEGORIES } from '@/features/products/products-api'
+import type { CreateOrderInput, Order, OrderItemInput, UpdateOrderInput } from './orders-api'
 
 export const CITIES = ['Barranquilla', 'Soledad'] as const
 
@@ -76,20 +77,57 @@ function checkDetails(values: DetailsValues, ctx: z.RefinementCtx, unchangedDate
   }
 }
 
+// A crown needs who it is for and the room
+function checkCrowns(items: OrderFormValues['items'], ctx: z.RefinementCtx) {
+  items.forEach((item, index) => {
+    if (item.category !== 'CORONAS') return
+    if (!item.deceasedName.trim()) {
+      ctx.addIssue({ code: 'custom', path: ['items', index, 'deceasedName'], message: 'Escribe el nombre del fallecido' })
+    }
+    if (!item.roomNumber.trim()) {
+      ctx.addIssue({ code: 'custom', path: ['items', index, 'roomNumber'], message: 'Escribe la sala' })
+    }
+  })
+}
+
+// What the API takes for a line: crown details only go with crowns
+export function toItemInput(item: OrderFormValues['items'][number]): OrderItemInput {
+  if (item.category !== 'CORONAS') return { productId: item.productId, quantity: item.quantity }
+  return {
+    productId: item.productId,
+    quantity: 1,
+    deceasedName: item.deceasedName.trim(),
+    roomNumber: item.roomNumber.trim(),
+    withRibbon: item.withRibbon,
+    withCard: item.withCard,
+  }
+}
+
 export const orderFormSchema = orderDetailsFields
   .extend({
     items: z
       .array(
         z.object({
+          // Tells lines apart on screen; crowns can repeat a product
+          key: z.string(),
           productId: z.string(),
           productName: z.string(),
+          category: z.enum(PRODUCT_CATEGORIES),
           price: z.number(),
           quantity: z.number().int().min(1, 'Mínimo 1').max(999, 'Máximo 999'),
+          // Only for crowns; empty for any other product
+          deceasedName: z.string().trim().max(100, 'Máximo 100 caracteres'),
+          roomNumber: z.string().trim().max(20, 'Máximo 20 caracteres'),
+          withRibbon: z.boolean(),
+          withCard: z.boolean(),
         }),
       )
       .min(1, 'Agrega al menos un producto'),
   })
-  .superRefine((values, ctx) => checkDetails(values, ctx))
+  .superRefine((values, ctx) => {
+    checkDetails(values, ctx)
+    checkCrowns(values.items, ctx)
+  })
 
 export type OrderFormValues = z.infer<typeof orderFormSchema>
 
@@ -192,7 +230,7 @@ export function toCreateOrderInput(values: OrderFormValues): CreateOrderInput {
     deliveryTimeFrom: values.deliveryTimeFrom || undefined,
     deliveryTimeTo: values.deliveryTimeTo || undefined,
     deliveryFee: Number(values.deliveryFee),
-    items: values.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+    items: values.items.map(toItemInput),
   }
 }
 

@@ -14,7 +14,8 @@ import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
 import { fetchProduct } from '@/features/products/products-api'
-import type { OrderFormValues } from './order-form-schema'
+import { surchargeOf } from './order-format'
+import { toItemInput, type OrderFormValues } from './order-form-schema'
 import { replaceOrderItems, type Order } from './orders-api'
 import { OrderItemsEditor } from './OrderItemsEditor'
 
@@ -46,7 +47,13 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
 
   // The order's items at their current prices, until staff start editing
   const initialItems: Item[] = order.items.map((item) => ({
+    key: item.id,
     productId: item.productId,
+    category: item.category,
+    deceasedName: item.deceasedName ?? '',
+    roomNumber: item.roomNumber ?? '',
+    withRibbon: item.withRibbon,
+    withCard: item.withCard,
     productName: currentProducts.get(item.productId)?.name ?? item.productName,
     price: currentProducts.get(item.productId)?.price ?? item.price,
     quantity: item.quantity,
@@ -62,15 +69,18 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
   })
 
   // The delivery fee stays the same; only the products change here
-  const newTotal = items.reduce((sum, item) => sum + item.price * item.quantity, order.deliveryFee)
+  const newTotal = items.reduce((sum, item) => sum + item.price * item.quantity + surchargeOf(item), order.deliveryFee)
   const netPaid = order.balance.netPaid
-  const canSave = !loading && !loadFailed && items.length > 0 && unavailableIds.size === 0
+  const crownsIncomplete = items.some(
+    (item) => item.category === 'CORONAS' && (!item.deceasedName.trim() || !item.roomNumber.trim()),
+  )
+  const canSave = !loading && !loadFailed && items.length > 0 && unavailableIds.size === 0 && !crownsIncomplete
 
   const mutation = useMutation({
     mutationFn: () =>
       replaceOrderItems(
         order.id,
-        items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+        items.map(toItemInput),
       ),
     onSuccess: (updated) => {
       queryClient.setQueryData(['order', order.id], updated)
@@ -129,6 +139,10 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
               )}
             </div>
           </div>
+        )}
+
+        {crownsIncomplete && (
+          <p className="text-sm text-muted-foreground">Escribe el nombre del fallecido y la sala de cada corona.</p>
         )}
 
         {submitError && (

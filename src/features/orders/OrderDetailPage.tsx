@@ -10,6 +10,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { LoadingState } from '@/components/LoadingState'
 import { ApiError } from '@/lib/api-client'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
+import { CrownLines } from './CrownLines'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
 import { OrderStatusActions } from './OrderStatusActions'
 import { OrderStatusBadge } from './OrderStatusBadge'
@@ -132,12 +133,17 @@ function ItemsCard({ order }: { order: Order }) {
       <CardContent>
         <ul className="text-sm">
           {order.items.map((item) => (
-            <li key={item.productId} className="flex justify-between gap-2 border-b py-2 last:border-b-0">
+            <li key={item.id} className="flex justify-between gap-2 border-b py-2 last:border-b-0">
               <span>
                 {item.quantity}× {item.productName}
-                <span className="text-muted-foreground"> · {formatMoney(item.price)} c/u</span>
+                <span className="text-muted-foreground">
+                  {' '}
+                  · {formatMoney(item.price)}
+                  {item.category !== 'CORONAS' && ' c/u'}
+                </span>
+                <CrownLines item={item} />
               </span>
-              <span className="tabular-nums">{formatMoney(item.price * item.quantity)}</span>
+              <span className="tabular-nums">{formatMoney(item.price * item.quantity + item.surcharge)}</span>
             </li>
           ))}
         </ul>

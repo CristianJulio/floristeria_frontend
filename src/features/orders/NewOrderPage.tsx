@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
 import { Controller, FormProvider, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -93,6 +93,7 @@ export function NewOrderPage() {
                       items={field.value}
                       onChange={field.onChange}
                       deliveryFee={deliveryFee}
+                      itemErrors={errors.items as ComponentProps<typeof OrderItemsEditor>['itemErrors']}
                       {...(fieldState.error?.message && { error: fieldState.error.message })}
                     />
                   )}

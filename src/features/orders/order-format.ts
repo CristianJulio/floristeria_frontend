@@ -76,6 +76,20 @@ export function formatDeliveryTime(order: Pick<Order, 'deliveryTimeFrom' | 'deli
   return 'Sin hora'
 }
 
+// What carrying both ribbon and card adds to a crown; the API applies the same amount
+export const CROWN_RIBBON_AND_CARD_SURCHARGE = 10_000
+
+export const surchargeOf = (item: { withRibbon: boolean; withCard: boolean }) =>
+  item.withRibbon && item.withCard ? CROWN_RIBBON_AND_CARD_SURCHARGE : 0
+
+// "Con cinta", "Con tarjeta", "Con cinta y tarjeta"; null when it carries neither
+export function formatExtras(item: { withRibbon: boolean; withCard: boolean }) {
+  if (item.withRibbon && item.withCard) return 'Con cinta y tarjeta'
+  if (item.withRibbon) return 'Con cinta'
+  if (item.withCard) return 'Con tarjeta'
+  return null
+}
+
 export function formatItems(order: Pick<Order, 'items'>) {
   return order.items.map((item) => `${item.quantity}× ${item.productName}`).join(', ')
 }
