@@ -224,6 +224,14 @@ export async function voidPayment(orderId: string, paymentId: string, reason: st
   return body.data
 }
 
+// Orders that still need work, soonest delivery first (the API's own order), whatever their date:
+// late ones are in on purpose. The largest page the API gives; the sidebar says if there are more
+export async function fetchActiveOrders() {
+  return apiFetch<{ data: Order[]; pagination: Pagination }>('/api/orders', {
+    query: { status: 'PENDING,PREPARING,READY,OUT_FOR_DELIVERY', pageSize: 100 },
+  })
+}
+
 export async function fetchOrders(filters: OrdersFilters) {
   return apiFetch<{ data: Order[]; pagination: Pagination }>('/api/orders', {
     query: {
