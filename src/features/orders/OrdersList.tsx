@@ -54,8 +54,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
               <TableHead>Destinatario</TableHead>
               <TableHead>Dirección</TableHead>
               <TableHead>Productos</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Estado y total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -79,7 +78,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                   </Link>
                   <div className="text-[13px] text-muted-foreground">De {order.senderName}</div>
                 </TableCell>
-                <TableCell className="max-w-64">
+                <TableCell className="max-w-48">
                   <Tooltip>
                     <TooltipTrigger render={<div className="truncate" />}>{formatAddress(order)}</TooltipTrigger>
                     <TooltipContent>
@@ -90,14 +89,13 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                   </Tooltip>
                   <div className="truncate text-[13px] text-muted-foreground">{formatPlace(order)}</div>
                 </TableCell>
-                <TableCell className="max-w-64 truncate text-muted-foreground" title={formatItems(order)}>
+                <TableCell className="max-w-48 truncate text-muted-foreground" title={formatItems(order)}>
                   {formatItems(order)}
                 </TableCell>
-                <TableCell>
-                  <OrderStatusBadge status={order.status} />
-                </TableCell>
+                {/* Status and total share a column, to leave the others room to breathe */}
                 <TableCell className="text-right">
                   <div className="flex flex-col items-end gap-1">
+                    <OrderStatusBadge status={order.status} />
                     <span className="font-medium tabular-nums">{formatMoney(order.balance.total)}</span>
                     <PendingMoney order={order} />
                   </div>
