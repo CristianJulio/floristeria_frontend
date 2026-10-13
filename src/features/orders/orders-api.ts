@@ -2,7 +2,7 @@ import { apiFetch } from '@/lib/api-client'
 import type { ContactType } from '@/lib/phone'
 import type { ProductCategory } from '@/features/products/products-api'
 
-export const ORDER_STATUSES = ['PENDING', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'] as const
+export const ORDER_STATUSES = ['PENDING', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'] as const
 export type OrderStatus = (typeof ORDER_STATUSES)[number]
 
 // A line of the order. Crowns are one line each and carry the details below

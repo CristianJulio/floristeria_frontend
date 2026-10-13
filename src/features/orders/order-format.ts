@@ -30,6 +30,7 @@ export function formatDateTime(iso: string) {
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Pendiente',
   PREPARING: 'En preparación',
+  READY: 'Realizado',
   OUT_FOR_DELIVERY: 'En camino',
   DELIVERED: 'Entregado',
   CANCELLED: 'Cancelado',
@@ -38,6 +39,7 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
 export const STATUS_CLASSES: Record<OrderStatus, string> = {
   PENDING: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100',
   PREPARING: 'bg-petal text-petal-foreground',
+  READY: 'bg-violet-100 text-violet-900 dark:bg-violet-900/40 dark:text-violet-100',
   OUT_FOR_DELIVERY: 'bg-blue-100 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100',
   DELIVERED: 'bg-green-100 text-green-900 dark:bg-green-900/40 dark:text-green-100',
   CANCELLED: 'bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100',
@@ -47,6 +49,7 @@ export const STATUS_CLASSES: Record<OrderStatus, string> = {
 export const STATUS_DOT_CLASSES: Record<OrderStatus, string> = {
   PENDING: 'bg-amber-500',
   PREPARING: 'bg-petal-foreground',
+  READY: 'bg-violet-500',
   OUT_FOR_DELIVERY: 'bg-blue-500',
   DELIVERED: 'bg-green-600',
   CANCELLED: 'bg-red-500',

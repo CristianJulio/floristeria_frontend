@@ -21,11 +21,12 @@ import { changeOrderStatus, type Order, type OrderStatus } from './orders-api'
 // Mirrors the backend's allowed changes; DELIVERED and CANCELLED have no next step
 const NEXT_STEP: Partial<Record<OrderStatus, { status: OrderStatus; label: string; question: string }>> = {
   PENDING: { status: 'PREPARING', label: 'Empezar preparación', question: '¿Empezar a preparar el pedido para' },
-  PREPARING: { status: 'OUT_FOR_DELIVERY', label: 'Enviar', question: '¿Enviar el pedido para' },
+  PREPARING: { status: 'READY', label: 'Marcar como realizado', question: '¿Marcar como realizado el pedido para' },
+  READY: { status: 'OUT_FOR_DELIVERY', label: 'Enviar', question: '¿Enviar el pedido para' },
   OUT_FOR_DELIVERY: { status: 'DELIVERED', label: 'Marcar como entregado', question: '¿Marcar como entregado el pedido para' },
 }
 
-const CANCELLABLE: OrderStatus[] = ['PENDING', 'PREPARING']
+const CANCELLABLE: OrderStatus[] = ['PENDING', 'PREPARING', 'READY']
 
 // Steps that need part of the order paid first: half to start preparing, all of it to deliver.
 // Roles with the permission may go ahead anyway, as an exception. Mirrors the backend's rules;
