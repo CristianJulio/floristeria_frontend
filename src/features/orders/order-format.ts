@@ -80,6 +80,11 @@ export function formatItems(order: Pick<Order, 'items'>) {
   return order.items.map((item) => `${item.quantity}× ${item.productName}`).join(', ')
 }
 
+// The street address with its complement, e.g. "Calle 84 #45-12, Apto 502"
+export function formatAddress(order: Pick<Order, 'addressLine1' | 'addressLine2'>) {
+  return [order.addressLine1, order.addressLine2].filter(Boolean).join(', ')
+}
+
 export function formatPlace(order: Pick<Order, 'neighborhood' | 'city'>) {
   return order.neighborhood ? `${order.neighborhood}, ${order.city}` : order.city
 }

@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router'
 import { cn } from 'cn'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
+  formatAddress,
   formatDeliveryDay,
   formatDeliveryTime,
   formatItems,
@@ -47,7 +48,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
             <TableRow>
               <TableHead>Entrega</TableHead>
               <TableHead>Destinatario</TableHead>
-              <TableHead>Lugar</TableHead>
+              <TableHead>Dirección</TableHead>
               <TableHead>Productos</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Total</TableHead>
@@ -73,7 +74,12 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                   </Link>
                   <div className="text-[13px] text-muted-foreground">De {order.senderName}</div>
                 </TableCell>
-                <TableCell>{formatPlace(order)}</TableCell>
+                <TableCell className="max-w-64">
+                  <div className="truncate" title={formatAddress(order)}>
+                    {formatAddress(order)}
+                  </div>
+                  <div className="truncate text-[13px] text-muted-foreground">{formatPlace(order)}</div>
+                </TableCell>
                 <TableCell className="max-w-64 truncate text-muted-foreground" title={formatItems(order)}>
                   {formatItems(order)}
                 </TableCell>
@@ -113,6 +119,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                 <div className={cn('text-base font-medium', !isClosed(order) && 'text-foreground')}>
                   {order.recipientName}
                 </div>
+                <div className="text-sm">{formatAddress(order)}</div>
                 <div className="text-sm text-muted-foreground">{formatPlace(order)}</div>
               </div>
               <div className="truncate text-sm text-muted-foreground">{formatItems(order)}</div>
