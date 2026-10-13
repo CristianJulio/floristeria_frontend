@@ -74,6 +74,8 @@ export type Order = {
   id: string
   senderName: string
   recipientName: string
+  recipientContact: string | null
+  recipientContactType: ContactType | null
   addressLine1: string
   addressLine2: string | null
   neighborhood: string | null
@@ -131,6 +133,8 @@ export async function changeOrderStatus(id: string, status: OrderStatus, cancell
 export type CreateOrderInput = {
   senderName: string
   recipientName: string
+  recipientContact?: string
+  recipientContactType?: ContactType
   addressLine1: string
   addressLine2?: string
   neighborhood?: string
@@ -163,6 +167,8 @@ export type UpdateOrderInput = {
   cardMessage?: string | null
   responsiblePhone?: string
   responsibleContactType?: ContactType
+  recipientContact?: string | null
+  recipientContactType?: ContactType | null
   deliveryDate?: string
   deliveryTimeFrom?: string | null
   deliveryTimeTo?: string | null

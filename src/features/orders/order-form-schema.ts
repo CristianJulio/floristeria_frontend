@@ -3,6 +3,7 @@ import { todayInColombia } from '@/lib/dates'
 import {
   OTHER_COUNTRY,
   CONTACT_TYPES,
+  type ContactType,
   isValidWhatsappUsername,
   PHONE_COUNTRIES,
   isValidInternationalPhone,
@@ -11,6 +12,26 @@ import {
 } from '@/lib/phone'
 import { PRODUCT_CATEGORIES } from '@/features/products/products-api'
 import type { CreateOrderInput, Order, OrderItemInput, UpdateOrderInput } from './orders-api'
+
+// The form fields behind each contact: who is responsible for the order, and the optional one
+// for the recipient. The contact input component works with either set
+export const RESPONSIBLE_CONTACT_FIELDS = {
+  type: 'contactType',
+  username: 'whatsappUsername',
+  country: 'phoneCountry',
+  otherCode: 'phoneOtherCode',
+  number: 'phoneNumber',
+} as const
+
+export const RECIPIENT_CONTACT_FIELDS = {
+  type: 'recipientContactType',
+  username: 'recipientWhatsappUsername',
+  country: 'recipientPhoneCountry',
+  otherCode: 'recipientPhoneOtherCode',
+  number: 'recipientPhoneNumber',
+} as const
+
+export type ContactFields = typeof RESPONSIBLE_CONTACT_FIELDS | typeof RECIPIENT_CONTACT_FIELDS
 
 export const CITIES = ['Barranquilla', 'Soledad'] as const
 
@@ -22,6 +43,11 @@ const time = z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d)?$/, 'Hora no válida')
 // Same limits as the backend; every input holds text, empty means "not given"
 const orderDetailsFields = z.object({
   recipientName: required(50),
+  recipientContactType: z.enum(CONTACT_TYPES),
+  recipientWhatsappUsername: z.string(),
+  recipientPhoneCountry: z.string(),
+  recipientPhoneOtherCode: z.string(),
+  recipientPhoneNumber: z.string(),
   addressLine1: required(40),
   addressLine2: optional(100),
   neighborhood: optional(30),
@@ -47,6 +73,56 @@ const orderDetailsFields = z.object({
 
 type DetailsValues = z.infer<typeof orderDetailsFields>
 
+const contactValues = (values: DetailsValues, fields: ContactFields) => ({
+  type: values[fields.type],
+  username: values[fields.username],
+  country: values[fields.country],
+  otherCode: values[fields.otherCode],
+  number: values[fields.number],
+})
+
+// Whether anything was typed for the contact: a username, or the phone number
+function hasContact(values: DetailsValues, fields: ContactFields) {
+  const contact = contactValues(values, fields)
+  return contact.type === 'WHATSAPP_USERNAME' ? !!contact.username.trim() : !!onlyDigits(contact.number)
+}
+
+// The contact as the API takes it: a username, or the phone in international format
+function contactOf(values: DetailsValues, fields: ContactFields) {
+  const contact = contactValues(values, fields)
+  if (contact.type === 'WHATSAPP_USERNAME') return contact.username.trim()
+  const code = contact.country === OTHER_COUNTRY ? contact.otherCode : contact.country
+  return toInternationalPhone(code, contact.number)
+}
+
+// An optional contact left empty is fine; one that is started has to be valid
+function checkContact(values: DetailsValues, fields: ContactFields, ctx: z.RefinementCtx, optionalContact: boolean) {
+  if (optionalContact && !hasContact(values, fields)) return
+  const contact = contactValues(values, fields)
+
+  if (contact.type === 'WHATSAPP_USERNAME') {
+    const username = contact.username.trim()
+    if (!username) {
+      ctx.addIssue({ code: 'custom', path: [fields.username], message: 'Escribe el usuario de WhatsApp' })
+    } else if (!isValidWhatsappUsername(username)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [fields.username],
+        message: 'Escribe el usuario sin "@", de 3 a 35 letras, números, puntos o guiones bajos',
+      })
+    }
+    return
+  }
+
+  if (contact.country === OTHER_COUNTRY && !onlyDigits(contact.otherCode)) {
+    ctx.addIssue({ code: 'custom', path: [fields.otherCode], message: 'Escribe el código del país' })
+  } else if (!onlyDigits(contact.number)) {
+    ctx.addIssue({ code: 'custom', path: [fields.number], message: 'Escribe el teléfono' })
+  } else if (!isValidInternationalPhone(contactOf(values, fields))) {
+    ctx.addIssue({ code: 'custom', path: [fields.number], message: 'El teléfono no parece válido' })
+  }
+}
+
 // Rules that involve more than one field. A date already in the past is only accepted if it
 // isn't being changed (e.g. editing the address of an overdue order that's still being prepared)
 function checkDetails(values: DetailsValues, ctx: z.RefinementCtx, unchangedDate?: string) {
@@ -54,23 +130,8 @@ function checkDetails(values: DetailsValues, ctx: z.RefinementCtx, unchangedDate
     ctx.addIssue({ code: 'custom', path: ['deliveryDate'], message: 'La fecha de entrega no puede estar en el pasado' })
   }
 
-  if (values.contactType === 'WHATSAPP_USERNAME') {
-    const username = values.whatsappUsername.trim()
-    if (!username) {
-      ctx.addIssue({ code: 'custom', path: ['whatsappUsername'], message: 'Escribe el usuario de WhatsApp' })
-    } else if (!isValidWhatsappUsername(username)) {
-      ctx.addIssue({ code: 'custom', path: ['whatsappUsername'], message: 'Escribe el usuario sin "@", de 3 a 35 letras, números, puntos o guiones bajos' })
-    }
-  } else {
-    const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
-    if (values.phoneCountry === OTHER_COUNTRY && !onlyDigits(values.phoneOtherCode)) {
-      ctx.addIssue({ code: 'custom', path: ['phoneOtherCode'], message: 'Escribe el código del país' })
-    } else if (!onlyDigits(values.phoneNumber)) {
-      ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'Escribe el teléfono' })
-    } else if (!isValidInternationalPhone(toInternationalPhone(code, values.phoneNumber))) {
-      ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'El teléfono no parece válido' })
-    }
-  }
+  checkContact(values, RESPONSIBLE_CONTACT_FIELDS, ctx, false)
+  checkContact(values, RECIPIENT_CONTACT_FIELDS, ctx, true)
 
   if (values.deliveryTimeFrom && values.deliveryTimeTo && values.deliveryTimeFrom > values.deliveryTimeTo) {
     ctx.addIssue({ code: 'custom', path: ['deliveryTimeTo'], message: 'La hora final no puede ser antes de la inicial' })
@@ -140,6 +201,11 @@ export type OrderDetailsFormValues = DetailsValues
 export function emptyOrderForm(): OrderFormValues {
   return {
     recipientName: '',
+    recipientContactType: 'PHONE',
+    recipientWhatsappUsername: '',
+    recipientPhoneCountry: '57',
+    recipientPhoneOtherCode: '',
+    recipientPhoneNumber: '',
     addressLine1: '',
     addressLine2: '',
     neighborhood: '',
@@ -172,13 +238,25 @@ export function typedDeliveryFee(text: string | undefined) {
 function splitPhone(phone: string) {
   const digits = onlyDigits(phone)
   const country = PHONE_COUNTRIES.find((c) => digits.startsWith(c.code))
-  if (country) return { phoneCountry: country.code, phoneOtherCode: '', phoneNumber: digits.slice(country.code.length) }
+  if (country) return { country: country.code, otherCode: '', number: digits.slice(country.code.length) }
   const numberLength = Math.min(10, digits.length - 1)
   return {
-    phoneCountry: OTHER_COUNTRY,
-    phoneOtherCode: digits.slice(0, digits.length - numberLength),
-    phoneNumber: digits.slice(-numberLength),
+    country: OTHER_COUNTRY,
+    otherCode: digits.slice(0, digits.length - numberLength),
+    number: digits.slice(-numberLength),
   }
+}
+
+// A saved contact (or none) as the form's fields
+function contactToForm(fields: ContactFields, contact: string | null, type: ContactType | null) {
+  const phone = type === 'PHONE' && contact ? splitPhone(contact) : { country: '57', otherCode: '', number: '' }
+  return {
+    [fields.type]: type ?? 'PHONE',
+    [fields.username]: type === 'WHATSAPP_USERNAME' && contact ? contact : '',
+    [fields.country]: phone.country,
+    [fields.otherCode]: phone.otherCode,
+    [fields.number]: phone.number,
+  } as Pick<DetailsValues, ContactFields[keyof ContactFields]>
 }
 
 export function orderToDetailsForm(order: Order): OrderDetailsFormValues {
@@ -191,22 +269,13 @@ export function orderToDetailsForm(order: Order): OrderDetailsFormValues {
     deliveryNotes: order.deliveryNotes ?? '',
     cardMessage: order.cardMessage ?? '',
     senderName: order.senderName,
-    contactType: order.responsibleContactType,
-    whatsappUsername: order.responsibleContactType === 'WHATSAPP_USERNAME' ? order.responsiblePhone : '',
-    ...(order.responsibleContactType === 'PHONE'
-      ? splitPhone(order.responsiblePhone)
-      : { phoneCountry: '57', phoneOtherCode: '', phoneNumber: '' }),
+    ...contactToForm(RESPONSIBLE_CONTACT_FIELDS, order.responsiblePhone, order.responsibleContactType),
+    ...contactToForm(RECIPIENT_CONTACT_FIELDS, order.recipientContact, order.recipientContactType),
     deliveryDate: order.deliveryDate,
     deliveryTimeFrom: order.deliveryTimeFrom ?? '',
     deliveryTimeTo: order.deliveryTimeTo ?? '',
     deliveryFee: String(order.deliveryFee),
   }
-}
-
-function phoneOf(values: DetailsValues) {
-  if (values.contactType === 'WHATSAPP_USERNAME') return values.whatsappUsername.trim()
-  const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
-  return toInternationalPhone(code, values.phoneNumber)
 }
 
 // Not trimmed inside, so the card keeps its line breaks
@@ -224,8 +293,12 @@ export function toCreateOrderInput(values: OrderFormValues): CreateOrderInput {
     city: values.city,
     deliveryNotes: optionalText(values.deliveryNotes) ?? undefined,
     cardMessage: cardText(values.cardMessage) ?? undefined,
-    responsiblePhone: phoneOf(values),
+    responsiblePhone: contactOf(values, RESPONSIBLE_CONTACT_FIELDS),
     responsibleContactType: values.contactType,
+    ...(hasContact(values, RECIPIENT_CONTACT_FIELDS) && {
+      recipientContact: contactOf(values, RECIPIENT_CONTACT_FIELDS),
+      recipientContactType: values.recipientContactType,
+    }),
     deliveryDate: values.deliveryDate,
     deliveryTimeFrom: values.deliveryTimeFrom || undefined,
     deliveryTimeTo: values.deliveryTimeTo || undefined,
@@ -245,8 +318,10 @@ export function toUpdateOrderInput(values: OrderDetailsFormValues, order: Order)
     city: values.city,
     deliveryNotes: optionalText(values.deliveryNotes),
     cardMessage: cardText(values.cardMessage),
-    responsiblePhone: phoneOf(values),
+    responsiblePhone: contactOf(values, RESPONSIBLE_CONTACT_FIELDS),
     responsibleContactType: values.contactType,
+    recipientContact: hasContact(values, RECIPIENT_CONTACT_FIELDS) ? contactOf(values, RECIPIENT_CONTACT_FIELDS) : null,
+    recipientContactType: hasContact(values, RECIPIENT_CONTACT_FIELDS) ? values.recipientContactType : null,
     deliveryDate: values.deliveryDate,
     deliveryTimeFrom: values.deliveryTimeFrom || null,
     deliveryTimeTo: values.deliveryTimeTo || null,
@@ -260,6 +335,10 @@ export function toUpdateOrderInput(values: OrderDetailsFormValues, order: Order)
   if ('responsiblePhone' in changes || 'responsibleContactType' in changes) {
     changes.responsiblePhone = next.responsiblePhone
     changes.responsibleContactType = next.responsibleContactType
+  }
+  if ('recipientContact' in changes || 'recipientContactType' in changes) {
+    changes.recipientContact = next.recipientContact
+    changes.recipientContactType = next.recipientContactType
   }
   return changes
 }

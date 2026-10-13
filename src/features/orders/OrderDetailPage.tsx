@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingState } from '@/components/LoadingState'
 import { ApiError } from '@/lib/api-client'
+import type { ContactType } from '@/lib/phone'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
 import { CrownLines } from './CrownLines'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
@@ -22,6 +23,16 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd>{children}</dd>
     </div>
+  )
+}
+
+// A phone is a link that calls it; a WhatsApp username is shown with its @
+function ContactValue({ contact, type }: { contact: string; type: ContactType }) {
+  if (type === 'WHATSAPP_USERNAME') return <>@{contact}</>
+  return (
+    <a href={`tel:${contact}`} className="underline-offset-4 hover:underline">
+      {contact}
+    </a>
   )
 }
 
@@ -41,15 +52,14 @@ function DeliveryCard({ order }: { order: Order }) {
             <div className="text-muted-foreground">{place}</div>
           </Field>
           {order.deliveryNotes && <Field label="Indicaciones">{order.deliveryNotes}</Field>}
-          {order.responsibleContactType === 'PHONE' ? (
-            <Field label="Teléfono de contacto">
-              <a href={`tel:${order.responsiblePhone}`} className="underline-offset-4 hover:underline">
-                {order.responsiblePhone}
-              </a>
+          {order.recipientContact && order.recipientContactType && (
+            <Field label="Contacto del destinatario">
+              <ContactValue contact={order.recipientContact} type={order.recipientContactType} />
             </Field>
-          ) : (
-            <Field label="Usuario de WhatsApp">@{order.responsiblePhone}</Field>
           )}
+          <Field label="Contacto del responsable">
+            <ContactValue contact={order.responsiblePhone} type={order.responsibleContactType} />
+          </Field>
           <Field label="Enviado por">{order.senderName}</Field>
         </dl>
       </CardContent>

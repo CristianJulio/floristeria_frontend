@@ -10,7 +10,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { todayInColombia } from '@/lib/dates'
 import { OTHER_COUNTRY, PHONE_COUNTRIES } from '@/lib/phone'
 import { formatMoney } from './order-format'
-import { CITIES, type OrderDetailsFormValues } from './order-form-schema'
+import {
+  CITIES,
+  RECIPIENT_CONTACT_FIELDS,
+  RESPONSIBLE_CONTACT_FIELDS,
+  type ContactFields,
+  type OrderDetailsFormValues,
+} from './order-form-schema'
 
 const CONTACT_OPTIONS = [
   { value: 'PHONE', label: 'Teléfono' },
@@ -49,6 +55,97 @@ export function FormField({
   )
 }
 
+// A phone (country and number) or a WhatsApp username, chosen with the toggle in the label row.
+// Works for either contact of the order, whichever set of form fields it is given
+function ContactInput({ fields, label }: { fields: ContactFields; label: string }) {
+  const {
+    register,
+    control,
+    setValue,
+    formState: { errors },
+  } = useFormContext<OrderDetailsFormValues>()
+  const type = useWatch({ control, name: fields.type })
+  const country = useWatch({ control, name: fields.country })
+
+  return (
+    <FormField
+      id={type === 'PHONE' ? fields.number : fields.username}
+      label={label}
+      action={
+        <div className="flex gap-2" role="radiogroup" aria-label={`Tipo de contacto: ${label}`}>
+          {CONTACT_OPTIONS.map((option) => (
+            <Button
+              key={option.value}
+              type="button"
+              size="sm"
+              role="radio"
+              aria-checked={type === option.value}
+              variant={type === option.value ? 'default' : 'outline'}
+              onClick={() => setValue(fields.type, option.value, { shouldValidate: true, shouldDirty: true })}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
+      }
+      error={
+        type === 'PHONE'
+          ? (errors[fields.otherCode]?.message ?? errors[fields.number]?.message)
+          : errors[fields.username]?.message
+      }
+    >
+      {type === 'WHATSAPP_USERNAME' ? (
+        <div className="relative">
+          <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground">
+            @
+          </span>
+          <Input
+            id={fields.username}
+            placeholder="usuario"
+            autoComplete="off"
+            className="pl-6"
+            aria-invalid={!!errors[fields.username]}
+            {...register(fields.username)}
+          />
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <select
+            aria-label="País"
+            className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+            {...register(fields.country)}
+          >
+            {PHONE_COUNTRIES.map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.label}
+              </option>
+            ))}
+            <option value={OTHER_COUNTRY}>Otro</option>
+          </select>
+          {country === OTHER_COUNTRY && (
+            <Input
+              aria-label="Código del país"
+              placeholder="+34"
+              inputMode="numeric"
+              className="w-20"
+              aria-invalid={!!errors[fields.otherCode]}
+              {...register(fields.otherCode)}
+            />
+          )}
+          <Input
+            id={fields.number}
+            type="tel"
+            inputMode="tel"
+            placeholder="300 123 4567"
+            aria-invalid={!!errors[fields.number]}
+            {...register(fields.number)}
+          />
+        </div>
+      )}
+    </FormField>
+  )
+}
+
 type Props = {
   // When editing, a delivery date already in the past stays selectable
   minDeliveryDate?: string
@@ -63,8 +160,6 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
     setValue,
     formState: { errors },
   } = useFormContext<OrderDetailsFormValues>()
-  const contactType = useWatch({ control, name: 'contactType' })
-  const phoneCountry = useWatch({ control, name: 'phoneCountry' })
   const city = useWatch({ control, name: 'city' })
   const cardMessage = useWatch({ control, name: 'cardMessage' }) ?? ''
   const deliveryNotes = useWatch({ control, name: 'deliveryNotes' }) ?? ''
@@ -80,6 +175,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
           <FormField id="recipientName" label="Nombre" error={errors.recipientName?.message}>
             <Input id="recipientName" aria-invalid={!!errors.recipientName} {...register('recipientName')} />
           </FormField>
+          <ContactInput fields={RECIPIENT_CONTACT_FIELDS} label="Contacto del destinatario (opcional)" />
           <FormField id="addressLine1" label="Dirección" error={errors.addressLine1?.message}>
             <Input
               id="addressLine1"
@@ -186,81 +282,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
           <FormField id="senderName" label="Enviado por" error={errors.senderName?.message}>
             <Input id="senderName" aria-invalid={!!errors.senderName} {...register('senderName')} />
           </FormField>
-          <FormField
-            id={contactType === 'PHONE' ? 'phoneNumber' : 'whatsappUsername'}
-            label="Contacto del responsable"
-            action={
-            <div className="flex gap-2" role="radiogroup" aria-label="Tipo de contacto">
-              {CONTACT_OPTIONS.map((option) => (
-                <Button
-                  key={option.value}
-                  type="button"
-                  size="sm"
-                  role="radio"
-                  aria-checked={contactType === option.value}
-                  variant={contactType === option.value ? 'default' : 'outline'}
-                  onClick={() => setValue('contactType', option.value, { shouldValidate: true, shouldDirty: true })}
-                >
-                  {option.label}
-                </Button>
-              ))}
-            </div>
-            }
-            error={
-              contactType === 'PHONE'
-                ? (errors.phoneOtherCode?.message ?? errors.phoneNumber?.message)
-                : errors.whatsappUsername?.message
-            }
-          >
-            {contactType === 'WHATSAPP_USERNAME' ? (
-              <div className="relative">
-                <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground">
-                  @
-                </span>
-                <Input
-                  id="whatsappUsername"
-                  placeholder="usuario"
-                  autoComplete="off"
-                  className="pl-6"
-                  aria-invalid={!!errors.whatsappUsername}
-                  {...register('whatsappUsername')}
-                />
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <select
-                  aria-label="País"
-                  className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
-                  {...register('phoneCountry')}
-                >
-                  {PHONE_COUNTRIES.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.label}
-                    </option>
-                  ))}
-                  <option value={OTHER_COUNTRY}>Otro</option>
-                </select>
-                {phoneCountry === OTHER_COUNTRY && (
-                  <Input
-                    aria-label="Código del país"
-                    placeholder="+34"
-                    inputMode="numeric"
-                    className="w-20"
-                    aria-invalid={!!errors.phoneOtherCode}
-                    {...register('phoneOtherCode')}
-                  />
-                )}
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  inputMode="tel"
-                  placeholder="300 123 4567"
-                  aria-invalid={!!errors.phoneNumber}
-                  {...register('phoneNumber')}
-                />
-              </div>
-            )}
-          </FormField>
+          <ContactInput fields={RESPONSIBLE_CONTACT_FIELDS} label="Contacto del responsable" />
         </CardContent>
       </Card>
 
