@@ -40,9 +40,9 @@ const CATEGORY_FILTERS = [
 
 // In the address as ?orden=mayor-precio; lowest price first when not set
 const SORT_OPTIONS: readonly { value: string; label: string; sort: ProductsSort }[] = [
-  { value: 'menor-precio', label: 'Menor precio', sort: 'price_asc' },
-  { value: 'mayor-precio', label: 'Mayor precio', sort: 'price_desc' },
-  { value: 'nombre', label: 'Nombre', sort: 'name' },
+  { value: 'menor-precio', label: 'Precio: menor a mayor', sort: 'price_asc' },
+  { value: 'mayor-precio', label: 'Precio: mayor a menor', sort: 'price_desc' },
+  { value: 'nombre', label: 'Nombre: A-Z', sort: 'name' },
 ]
 
 function ProductImage({ product }: { product: Product }) {
@@ -172,13 +172,18 @@ export function ProductsPage() {
           onChange={(value) => setParam('categoria', value === 'todos' ? null : value)}
           className="flex w-full sm:w-auto"
         />
-        <SegmentedControl
-          label="Ordenar por"
-          options={SORT_OPTIONS}
+        <select
+          aria-label="Ordenar por"
           value={sort.value}
-          onChange={(value) => setParam('orden', value === SORT_OPTIONS[0]!.value ? null : value)}
-          className="flex w-full sm:w-auto"
-        />
+          onChange={(event) => setParam('orden', event.target.value === SORT_OPTIONS[0]!.value ? null : event.target.value)}
+          className="h-8 w-full rounded-lg border border-input bg-card px-2 text-sm sm:w-auto"
+        >
+          {SORT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
         <SearchInput
           label="Buscar productos"
           placeholder="Nombre del producto"
