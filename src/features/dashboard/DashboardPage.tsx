@@ -19,27 +19,19 @@ type Period = (typeof PERIODS)[number]['value']
 
 const monthName = new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
-// The days a period covers around a day, with the name to show for it
+// The days a period covers around a day, with how to name it under the card's title
 function periodDays(period: Exclude<Period, 'rango'>, day: string, today: string) {
   if (period === 'dia') {
-    return { from: day, to: day, title: day === today ? 'Hoy' : formatDeliveryDay(day) }
+    return { from: day, to: day, label: day === today ? `Hoy · ${formatDeliveryDay(day)}` : formatDeliveryDay(day) }
   }
   if (period === 'semana') {
     const week = weekRange(day)
-    const isCurrent = week.from <= today && today <= week.to
-    return {
-      ...week,
-      title: isCurrent ? 'Esta semana' : 'Semana',
-      subtitle: `${formatDeliveryDay(week.from)} – ${formatDeliveryDay(week.to)}`,
-    }
+    const range = `${formatDeliveryDay(week.from)} – ${formatDeliveryDay(week.to)}`
+    return { ...week, label: week.from <= today && today <= week.to ? `Esta semana · ${range}` : range }
   }
   const month = monthRange(day)
-  const isCurrent = month.from <= today && today <= month.to
-  return {
-    ...month,
-    title: isCurrent ? 'Este mes' : monthName.format(new Date(`${month.from}T00:00:00Z`)),
-    ...(isCurrent && { subtitle: monthName.format(new Date(`${month.from}T00:00:00Z`)) }),
-  }
+  const name = monthName.format(new Date(`${month.from}T00:00:00Z`))
+  return { ...month, label: month.from <= today && today <= month.to ? `Este mes · ${name}` : name }
 }
 
 // One day later or earlier, one week, or one month, depending on the period
@@ -141,8 +133,8 @@ export function DashboardPage() {
 
       <div className="max-w-md">
         <IncomeCard
-          title={shown?.title ?? 'Rango de fechas'}
-          {...(shown?.subtitle && { subtitle: shown.subtitle })}
+          title="Ingresos"
+          subtitle={shown?.label ?? `${formatDeliveryDay(range.from)} – ${formatDeliveryDay(range.to)}`}
           from={from}
           to={to}
         />
