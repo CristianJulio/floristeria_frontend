@@ -10,6 +10,7 @@ import { CollectedByMethodCard } from './CollectedByMethodCard'
 import { IncomeCard } from './IncomeCard'
 import { OrdersByStatusCard } from './OrdersByStatusCard'
 import { PendingPaymentsCard } from './PendingPaymentsCard'
+import { SummaryStrip } from './SummaryStrip'
 import { TopProductsCard } from './TopProductsCard'
 
 const PERIODS = [
@@ -68,7 +69,8 @@ export function DashboardPage() {
         <p className="text-sm text-muted-foreground">{label}</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Stays at the top while scrolling, to change the period without going back up */}
+      <div className="sticky top-0 z-10 -mx-4 flex flex-wrap items-center gap-2 border-b bg-background px-4 py-2 sm:-mx-6 sm:px-6">
         <SegmentedControl
           label="Período"
           options={PERIODS}
@@ -135,10 +137,12 @@ export function DashboardPage() {
       </div>
 
       {/* Every card follows the period chosen above */}
+      <SummaryStrip from={from} to={to} />
+
       <div className="grid gap-4 lg:grid-cols-2">
         <IncomeCard from={from} to={to} />
-        <CollectedByMethodCard from={from} to={to} />
         <OrdersByStatusCard from={from} to={to} />
+        <CollectedByMethodCard from={from} to={to} />
         <PendingPaymentsCard from={from} to={to} />
         <TopProductsCard kind="best" from={from} to={to} />
         <TopProductsCard kind="worst" from={from} to={to} />

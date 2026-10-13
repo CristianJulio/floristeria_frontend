@@ -26,7 +26,6 @@ export function CollectedByMethodCard({ from, to }: { from: string; to: string }
           <p className="text-sm text-muted-foreground">No se registraron pagos en este período.</p>
         ) : (
           <>
-            <div className="text-3xl font-semibold tabular-nums">{formatMoney(data.net)}</div>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground">
@@ -48,18 +47,16 @@ export function CollectedByMethodCard({ from, to }: { from: string; to: string }
                   </tr>
                 ))}
               </tbody>
-              {data.rows.length > 1 && (
-                <tfoot>
-                  <tr className="border-t font-medium">
-                    <td className="pt-1.5">Total</td>
-                    <td className="pt-1.5 text-right tabular-nums">{formatMoney(data.paid)}</td>
-                    <td className="pt-1.5 text-right tabular-nums">
-                      {data.refunded > 0 ? formatMoney(data.refunded) : '–'}
-                    </td>
-                    <td className="pt-1.5 text-right tabular-nums">{formatMoney(data.net)}</td>
-                  </tr>
-                </tfoot>
-              )}
+              <tfoot>
+                <tr className="border-t font-medium">
+                  <td className="pt-1.5">Total</td>
+                  <td className="pt-1.5 text-right tabular-nums">{formatMoney(data.paid)}</td>
+                  <td className="pt-1.5 text-right tabular-nums">
+                    {data.refunded > 0 ? formatMoney(data.refunded) : '–'}
+                  </td>
+                  <td className="pt-1.5 text-right tabular-nums">{formatMoney(data.net)}</td>
+                </tr>
+              </tfoot>
             </table>
           </>
         ))}

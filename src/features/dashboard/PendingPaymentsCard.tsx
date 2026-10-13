@@ -30,20 +30,21 @@ export function PendingPaymentsCard({ from, to, className }: { from: string; to:
           <p className="text-sm text-muted-foreground">No hay pagos ni reembolsos pendientes en este período.</p>
         ) : (
           <>
-            <div className="flex flex-wrap gap-x-8 gap-y-3">
-              <div>
-                <div className="text-sm text-muted-foreground">Por cobrar</div>
-                <div className="text-3xl font-semibold tabular-nums">{formatMoney(data.debtSum)}</div>
-                <div className="text-sm text-muted-foreground">en {orders(data.debtCount)}</div>
-              </div>
-              {data.refundCount > 0 && (
-                <div>
-                  <div className="text-sm text-muted-foreground">Por reembolsar</div>
-                  <div className="text-3xl font-semibold tabular-nums">{formatMoney(data.refundSum)}</div>
-                  <div className="text-sm text-muted-foreground">en {orders(data.refundCount)}</div>
-                </div>
+            <p className="text-sm text-muted-foreground">
+              {data.debtCount > 0 && (
+                <>
+                  <span className="font-medium text-foreground tabular-nums">{formatMoney(data.debtSum)}</span> por
+                  cobrar en {orders(data.debtCount)}
+                </>
               )}
-            </div>
+              {data.debtCount > 0 && data.refundCount > 0 && ' · '}
+              {data.refundCount > 0 && (
+                <>
+                  <span className="font-medium text-foreground tabular-nums">{formatMoney(data.refundSum)}</span> por
+                  reembolsar en {orders(data.refundCount)}
+                </>
+              )}
+            </p>
             <ul className="-mr-2 flex max-h-80 flex-col overflow-y-auto pr-2 text-sm">
               {data.orders.map((order) => {
                 const isRefund = order.kind === 'REFUND'

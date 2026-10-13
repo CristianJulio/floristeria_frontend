@@ -12,8 +12,8 @@ function Row({ label, value, strong }: { label: string; value: number; strong?: 
   )
 }
 
-// What the orders delivered in the period are worth: the total split into orders and delivery fees,
-// and how much of it has been collected
+// What the total of the orders delivered in the period is made of: the orders, the delivery fees, and
+// what was kept from cancelled orders. The total itself is also in the strip above
 export function IncomeCard({ from, to }: { from: string; to: string }) {
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['dashboard', 'income', from, to],
@@ -25,31 +25,20 @@ export function IncomeCard({ from, to }: { from: string; to: string }) {
   return (
     <DashboardCard
       title="Ingresos"
-      subtitle="Pedidos según su día de entrega"
+      subtitle="De qué se compone el total, según el día de entrega"
       isPending={isPending}
       isError={isError}
       onRetry={refetch}
     >
       {data && (
-        <>
-          <div>
-            <div className="text-sm text-muted-foreground">Total de pedidos</div>
-            <div className="text-3xl font-semibold tabular-nums">{formatMoney(data.total)}</div>
-            <div className="text-sm text-muted-foreground">
-              {data.orderCount} {data.orderCount === 1 ? 'pedido' : 'pedidos'}
-            </div>
+        <div className="flex flex-col gap-1.5 text-sm">
+          <Row label="Pedidos" value={data.items} />
+          <Row label="Domicilios" value={data.delivery} />
+          {data.retainedFromCancelled > 0 && <Row label="Retenido de cancelados" value={data.retainedFromCancelled} />}
+          <div className="mt-1 border-t pt-2">
+            <Row label="Total de pedidos" value={data.total} strong />
           </div>
-          <div className="flex flex-col gap-1.5 text-sm">
-            <Row label="Pedidos" value={data.items} />
-            <Row label="Domicilios" value={data.delivery} />
-            {data.retainedFromCancelled > 0 && <Row label="Retenido de cancelados" value={data.retainedFromCancelled} />}
-          </div>
-          <div className="flex flex-col gap-1.5 border-t pt-3 text-sm">
-            <Row label="Cobrado" value={data.collected} strong />
-            <Row label="Por cobrar" value={data.pendingPayment} />
-            {data.pendingRefund > 0 && <Row label="Por reembolsar" value={data.pendingRefund} />}
-          </div>
-        </>
+        </div>
       )}
     </DashboardCard>
   )
