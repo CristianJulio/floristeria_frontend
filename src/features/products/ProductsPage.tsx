@@ -38,11 +38,11 @@ const CATEGORY_FILTERS = [
   })),
 ]
 
-// In the address as ?orden=menor-precio; by name when not set
+// In the address as ?orden=mayor-precio; lowest price first when not set
 const SORT_OPTIONS: readonly { value: string; label: string; sort: ProductsSort }[] = [
-  { value: 'nombre', label: 'Nombre', sort: 'name' },
   { value: 'menor-precio', label: 'Menor precio', sort: 'price_asc' },
   { value: 'mayor-precio', label: 'Mayor precio', sort: 'price_desc' },
+  { value: 'nombre', label: 'Nombre', sort: 'name' },
 ]
 
 function ProductImage({ product }: { product: Product }) {
@@ -176,7 +176,7 @@ export function ProductsPage() {
           label="Ordenar por"
           options={SORT_OPTIONS}
           value={sort.value}
-          onChange={(value) => setParam('orden', value === 'nombre' ? null : value)}
+          onChange={(value) => setParam('orden', value === SORT_OPTIONS[0]!.value ? null : value)}
           className="flex w-full sm:w-auto"
         />
         <SearchInput
