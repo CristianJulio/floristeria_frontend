@@ -33,6 +33,7 @@ export function IncomeCard({ from, to }: { from: string; to: string }) {
       {data && (
         <>
           <div>
+            <div className="text-sm text-muted-foreground">Total de pedidos</div>
             <div className="text-3xl font-semibold tabular-nums">{formatMoney(data.total)}</div>
             <div className="text-sm text-muted-foreground">
               {data.orderCount} {data.orderCount === 1 ? 'pedido' : 'pedidos'}
