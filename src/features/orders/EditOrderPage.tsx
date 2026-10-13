@@ -100,7 +100,7 @@ function EditOrderForm({ order }: { order: Order }) {
           )}
 
           <div className="flex gap-2 lg:flex-col-reverse">
-            <Button type="button" variant="outline" size="lg" onClick={() => navigate(-1)} disabled={mutation.isPending}>
+            <Button type="button" variant="outline" size="lg" onClick={() => navigate(detailPath)} disabled={mutation.isPending}>
               Descartar
             </Button>
             <Button type="submit" size="lg" className="flex-1 lg:flex-none" disabled={mutation.isPending}>
@@ -199,7 +199,7 @@ export function EditOrderPage() {
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate(-1)}>
+      <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate(`/pedidos/${id}`)}>
         ← Volver
       </Button>
       <h1 className="text-xl font-semibold">Editar pedido{order ? ` para ${order.recipientName}` : ''}</h1>

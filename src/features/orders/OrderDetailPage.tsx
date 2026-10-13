@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CheckIcon, CopyIcon } from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { useAuth } from '@/features/auth/auth-context'
 import { ChangeItemsDialog } from './ChangeItemsDialog'
 import { areItemsEditable, isOrderEditable } from './order-rules'
@@ -219,6 +219,7 @@ function RecordLine({ order }: { order: Order }) {
 export function OrderDetailPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { can } = useAuth()
 
   const { data: order, isPending, isError, error, refetch } = useQuery({
@@ -228,9 +229,12 @@ export function OrderDetailPage() {
     retry: (failureCount, err) => !(err instanceof ApiError && [400, 404].includes(err.status)) && failureCount < 3,
   })
 
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/'
+
   const backButton = (
-    // Back through history, so the list keeps its filters and page
-    <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate(-1)}>
+    // To the orders list, with the filters and page it had if the order was opened from there
+    // (the list passes its address along); otherwise to the list's default view
+    <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate(backTo)}>
       ← Volver
     </Button>
   )

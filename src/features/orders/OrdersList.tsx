@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { cn } from 'cn'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -39,7 +39,10 @@ const isClosed = (order: Order) => order.status === 'DELIVERED' || order.status 
 // A table on computers, cards on phones; both open the order's detail
 export function OrdersList({ orders }: { orders: Order[] }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const detailPath = (order: Order) => `/pedidos/${order.id}`
+  // The detail page's "Volver" returns here, with the same filters and page
+  const detailState = { from: `${location.pathname}${location.search}` }
 
   return (
     <TooltipProvider>
@@ -60,7 +63,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
               <TableRow
                 key={order.id}
                 className={cn('cursor-pointer hover:bg-secondary/40', isClosed(order) && 'text-muted-foreground')}
-                onClick={() => navigate(detailPath(order))}
+                onClick={() => navigate(detailPath(order), { state: detailState })}
               >
                 <TableCell>
                   <div className="text-[15px] font-medium tabular-nums">{formatDeliveryTime(order)}</div>
@@ -69,6 +72,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
                 <TableCell>
                   <Link
                     to={detailPath(order)}
+                    state={detailState}
                     className={cn('text-[15px] font-medium hover:underline', !isClosed(order) && 'text-foreground')}
                   >
                     {order.recipientName}
@@ -109,6 +113,7 @@ export function OrdersList({ orders }: { orders: Order[] }) {
           <li key={order.id}>
             <Link
               to={detailPath(order)}
+              state={detailState}
               className={cn(
                 'flex flex-col gap-2 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40',
                 isClosed(order) && 'text-muted-foreground',

@@ -62,7 +62,7 @@ export function NewOrderPage() {
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate(-1)}>
+      <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate('/')}>
         ← Volver
       </Button>
       <h1 className="text-xl font-semibold">Nuevo pedido</h1>
