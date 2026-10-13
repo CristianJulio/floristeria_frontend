@@ -90,8 +90,11 @@ export function formatExtras(item: { withRibbon: boolean; withCard: boolean }) {
   return null
 }
 
-export function formatItems(order: Pick<Order, 'items'>) {
-  return order.items.map((item) => `${item.quantity}× ${item.productName}`).join(', ')
+// The products and then the extras, e.g. "1× Ramo rosas, 2× Globo"
+export function formatItems(order: Pick<Order, 'items' | 'extras'>) {
+  return [...order.items.map((item) => ({ ...item, name: item.productName })), ...order.extras]
+    .map((line) => `${line.quantity}× ${line.name}`)
+    .join(', ')
 }
 
 // The street address with its complement, e.g. "Calle 84 #45-12, Apto 502"
