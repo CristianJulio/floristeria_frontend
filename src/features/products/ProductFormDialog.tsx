@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import {
@@ -63,12 +64,10 @@ type Props = {
   // Without a product the dialog creates one
   product?: Product
   onClose: () => void
-  // Called with the new product, after the dialog's own onClose; only when creating
-  onCreated?: (product: Product) => void
 }
 
 // Rendered only while open, so every opening starts from the product's current values
-export function ProductFormDialog({ product, onClose, onCreated }: Props) {
+export function ProductFormDialog({ product, onClose }: Props) {
   const queryClient = useQueryClient()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const isEdit = product !== undefined
@@ -103,7 +102,7 @@ export function ProductFormDialog({ product, onClose, onCreated }: Props) {
       // Product lists and the order form's product search both read these
       queryClient.invalidateQueries({ queryKey: ['products'] })
       onClose()
-      if (!isEdit) onCreated?.(saved)
+      if (!isEdit) toast.success(`Producto «${saved.name}» creado`)
     },
     onError: (error) => {
       setSubmitError(
