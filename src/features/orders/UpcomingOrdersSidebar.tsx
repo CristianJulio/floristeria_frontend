@@ -12,14 +12,12 @@ const URGENCY_CLASSES: Record<Urgency, string> = {
   ok: 'border-l-green-500 bg-green-50 dark:bg-green-900/20',
   soon: 'border-l-amber-500 bg-amber-50 dark:bg-amber-900/20',
   alert: 'border-l-red-500 bg-red-50 dark:bg-red-900/20',
-  none: 'border-l-border bg-muted/40',
 }
 
 const URGENCY_TEXT_CLASSES: Record<Urgency, string> = {
   ok: 'text-green-800 dark:text-green-300',
   soon: 'text-amber-800 dark:text-amber-300',
   alert: 'font-semibold text-red-800 dark:text-red-300',
-  none: 'text-muted-foreground',
 }
 
 // The current time, refreshed every half minute so the colours and countdowns keep up
@@ -51,7 +49,7 @@ function OrderItem({
   onSelect?: (() => void) | undefined
 }) {
   const minutes = minutesToDelivery(order, now)
-  const urgency = urgencyOf(minutes, order.deliveryDate, today)
+  const urgency = urgencyOf(minutes)
   const countdown = formatCountdown(minutes)
   const day = dayLabel(order.deliveryDate, today)
 
