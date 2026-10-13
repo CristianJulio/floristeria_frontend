@@ -3,7 +3,6 @@ import { todayInColombia } from '@/lib/dates'
 import {
   OTHER_COUNTRY,
   CONTACT_TYPES,
-  cleanWhatsappUsername,
   isValidWhatsappUsername,
   PHONE_COUNTRIES,
   isValidInternationalPhone,
@@ -55,11 +54,11 @@ function checkDetails(values: DetailsValues, ctx: z.RefinementCtx, unchangedDate
   }
 
   if (values.contactType === 'WHATSAPP_USERNAME') {
-    const username = cleanWhatsappUsername(values.whatsappUsername)
+    const username = values.whatsappUsername.trim()
     if (!username) {
       ctx.addIssue({ code: 'custom', path: ['whatsappUsername'], message: 'Escribe el usuario de WhatsApp' })
     } else if (!isValidWhatsappUsername(username)) {
-      ctx.addIssue({ code: 'custom', path: ['whatsappUsername'], message: 'Usa de 3 a 35 letras, números, puntos o guiones bajos' })
+      ctx.addIssue({ code: 'custom', path: ['whatsappUsername'], message: 'Escribe el usuario sin "@", de 3 a 35 letras, números, puntos o guiones bajos' })
     }
   } else {
     const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
@@ -167,7 +166,7 @@ export function orderToDetailsForm(order: Order): OrderDetailsFormValues {
 }
 
 function phoneOf(values: DetailsValues) {
-  if (values.contactType === 'WHATSAPP_USERNAME') return cleanWhatsappUsername(values.whatsappUsername)
+  if (values.contactType === 'WHATSAPP_USERNAME') return values.whatsappUsername.trim()
   const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
   return toInternationalPhone(code, values.phoneNumber)
 }

@@ -25,11 +25,8 @@ export function isValidInternationalPhone(phone: string) {
   return /^\+\d{8,15}$/.test(phone)
 }
 
-// Same rule as the API: 3 to 35 letters, digits, periods or underscores; the "@" is not stored
-export function cleanWhatsappUsername(value: string) {
-  return value.trim().replace(/^@/, '')
-}
-
+// Same rule as the API: 3 to 35 letters, digits, periods or underscores. The "@" is only shown
+// in the form as a prefix, never typed or stored
 export function isValidWhatsappUsername(username: string) {
   return /^[A-Za-z0-9._]{3,35}$/.test(username)
 }

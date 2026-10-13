@@ -186,13 +186,19 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
               <option value="WHATSAPP_USERNAME">Usuario de WhatsApp</option>
             </select>
             {contactType === 'WHATSAPP_USERNAME' ? (
-              <Input
-                id="whatsappUsername"
-                placeholder="usuario"
-                autoComplete="off"
-                aria-invalid={!!errors.whatsappUsername}
-                {...register('whatsappUsername')}
-              />
+              <div className="relative">
+                <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground">
+                  @
+                </span>
+                <Input
+                  id="whatsappUsername"
+                  placeholder="usuario"
+                  autoComplete="off"
+                  className="pl-6"
+                  aria-invalid={!!errors.whatsappUsername}
+                  {...register('whatsappUsername')}
+                />
+              </div>
             ) : (
               <div className="flex gap-2">
                 <select
