@@ -32,10 +32,9 @@ function useNow(intervalMs = 30_000) {
   return now
 }
 
-// Orders from earlier days that are still open are grouped on top as late
+// Shown on each order due on another day; orders due today show only their time
 function dayLabel(date: string, today: string) {
-  if (date < today) return 'Atrasados'
-  if (date === today) return 'Hoy'
+  if (date === today) return null
   if (date === addDays(today, 1)) return 'Mañana'
   return formatDeliveryDay(date)
 }
@@ -54,6 +53,7 @@ function OrderItem({
   const minutes = minutesToDelivery(order, now)
   const urgency = urgencyOf(minutes, order.deliveryDate, today)
   const countdown = formatCountdown(minutes)
+  const day = dayLabel(order.deliveryDate, today)
 
   return (
     <li>
@@ -66,7 +66,10 @@ function OrderItem({
         )}
       >
         <div className="flex items-baseline justify-between gap-2">
-          <span className="font-semibold tabular-nums">{formatDeliveryTime(order)}</span>
+          <span className="font-semibold tabular-nums">
+            {day && <span className="font-normal text-muted-foreground">{day} · </span>}
+            {formatDeliveryTime(order)}
+          </span>
           {countdown && <span className={cn('text-xs tabular-nums', URGENCY_TEXT_CLASSES[urgency])}>{countdown}</span>}
         </div>
         <span className="truncate font-medium">{order.recipientName}</span>
@@ -90,15 +93,6 @@ export function UpcomingOrdersSidebar({ onSelect }: { onSelect?: () => void }) {
     refetchInterval: 60_000,
   })
 
-  // The API already sorts by date and time; only the day headings are worked out here
-  const groups: { label: string; orders: Order[] }[] = []
-  for (const order of data?.data ?? []) {
-    const label = dayLabel(order.deliveryDate, today)
-    const last = groups[groups.length - 1]
-    if (last?.label === label) last.orders.push(order)
-    else groups.push({ label, orders: [order] })
-  }
-
   return (
     <div className="flex flex-col gap-4 p-4">
       <div>
@@ -110,20 +104,16 @@ export function UpcomingOrdersSidebar({ onSelect }: { onSelect?: () => void }) {
         <p className="text-sm text-muted-foreground">Cargando…</p>
       ) : isError ? (
         <p className="text-sm text-destructive">No se pudieron cargar los pedidos.</p>
-      ) : groups.length === 0 ? (
+      ) : data.data.length === 0 ? (
         <p className="text-sm text-muted-foreground">No hay pedidos abiertos.</p>
       ) : (
         <>
-          {groups.map((group) => (
-            <section key={group.label} className="flex flex-col gap-1.5">
-              <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{group.label}</h3>
-              <ul className="flex flex-col gap-1.5">
-                {group.orders.map((order) => (
-                  <OrderItem key={order.id} order={order} now={now} today={today} onSelect={onSelect} />
-                ))}
-              </ul>
-            </section>
-          ))}
+          {/* The API already sorts by date and time: soonest first */}
+          <ul className="flex flex-col gap-1.5">
+            {data.data.map((order) => (
+              <OrderItem key={order.id} order={order} now={now} today={today} onSelect={onSelect} />
+            ))}
+          </ul>
           {data.pagination.total > data.data.length && (
             <p className="text-center text-xs text-muted-foreground">
               Mostrando {data.data.length} de {data.pagination.total}
