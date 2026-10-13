@@ -11,6 +11,8 @@ export type OrderItem = {
   productId: string
   productName: string
   category: ProductCategory
+  // The product's current picture, if it has one
+  imageUrl: string | null
   price: number
   quantity: number
   deceasedName: string | null

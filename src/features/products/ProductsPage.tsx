@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { PackageSearchIcon } from 'lucide-react'
@@ -19,7 +18,7 @@ import { CATEGORY_LABELS, PRODUCT_CATEGORIES, fetchProducts,
   type ProductsSort,
 } from './products-api'
 import { ProductFormDialog } from './ProductFormDialog'
-import { ProductPlaceholder } from './ProductPlaceholder'
+import { ProductImage } from './ProductImage'
 
 // In the address as the label in lowercase, e.g. ?categoria=ramos
 const CATEGORY_FILTERS = [
@@ -37,39 +36,6 @@ const SORT_OPTIONS: readonly { value: string; label: string; sort: ProductsSort 
   { value: 'mayor-precio', label: 'Precio: mayor a menor', sort: 'price_desc' },
   { value: 'nombre', label: 'Nombre: A-Z', sort: 'name' },
 ]
-
-function ProductImage({ product }: { product: Product }) {
-  const [broken, setBroken] = useState(false)
-  const [open, setOpen] = useState(false)
-  if (!product.imageUrl || broken) return <ProductPlaceholder className="size-10 shrink-0" />
-  return (
-    <>
-      <button
-        type="button"
-        aria-label={`Ver imagen de ${product.name}`}
-        className="shrink-0 cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        onClick={() => setOpen(true)}
-      >
-        <img
-          src={product.imageUrl}
-          alt=""
-          loading="lazy"
-          className="size-10 rounded-md object-cover"
-          onError={() => setBroken(true)}
-        />
-      </button>
-      {/* Shows the image at full size so staff can see the arrangement */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="pr-8">{product.name}</DialogTitle>
-          </DialogHeader>
-          <img src={product.imageUrl} alt={product.name} className="max-h-[70vh] w-full rounded-md object-contain" />
-        </DialogContent>
-      </Dialog>
-    </>
-  )
-}
 
 // Turns a product on or off for sale in one tap; saved immediately
 function AvailabilitySwitch({ product, disabled }: { product: Product; disabled: boolean }) {
@@ -236,7 +202,7 @@ export function ProductsPage() {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <ProductImage product={product} />
+                        <ProductImage name={product.name} imageUrl={product.imageUrl} />
                         <div className="min-w-0">
                           <div className="font-medium">{product.name}</div>
                           <div className="max-w-md truncate text-xs text-muted-foreground">
@@ -266,7 +232,7 @@ export function ProductsPage() {
           <ul className="flex flex-col gap-2 md:hidden">
             {data.data.map((product) => (
               <li key={product.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
-                <ProductImage product={product} />
+                <ProductImage name={product.name} imageUrl={product.imageUrl} />
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">{product.name}</div>
                   <div className="text-xs text-muted-foreground">{CATEGORY_LABELS[product.category]}</div>

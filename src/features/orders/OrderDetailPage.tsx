@@ -12,6 +12,7 @@ import { ApiError } from '@/lib/api-client'
 import type { ContactType } from '@/lib/phone'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
 import { CrownLines } from './CrownLines'
+import { ProductImage } from '@/features/products/ProductImage'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
 import { OrderStatusActions } from './OrderStatusActions'
 import { OrderStatusBadge } from './OrderStatusBadge'
@@ -143,8 +144,9 @@ function ItemsCard({ order }: { order: Order }) {
       <CardContent>
         <ul className="text-sm">
           {order.items.map((item) => (
-            <li key={item.id} className="flex justify-between gap-2 border-b py-2 last:border-b-0">
-              <span>
+            <li key={item.id} className="flex items-start justify-between gap-3 border-b py-2 last:border-b-0">
+              <ProductImage name={item.productName} imageUrl={item.imageUrl} showPlaceholder={false} />
+              <span className="min-w-0 flex-1">
                 {item.quantity}× {item.productName}
                 <span className="text-muted-foreground">
                   {' '}
