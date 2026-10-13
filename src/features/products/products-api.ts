@@ -21,10 +21,13 @@ export type Product = {
   available: boolean
 }
 
+export type ProductsSort = 'name' | 'price_asc' | 'price_desc'
+
 export type ProductsFilters = {
   search?: string
   available?: boolean
   category?: ProductCategory
+  sort?: ProductsSort
   page?: number
   pageSize?: number
 }
@@ -71,6 +74,7 @@ export async function fetchProducts(filters: ProductsFilters = {}) {
       search: filters.search?.trim() || undefined,
       available: filters.available,
       category: filters.category,
+      sort: filters.sort,
       page: filters.page,
       pageSize: filters.pageSize,
     },

@@ -14,7 +14,11 @@ import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { apiErrorMessage } from '@/lib/api-errors'
 import { formatMoney } from '@/lib/money'
-import { CATEGORY_LABELS, PRODUCT_CATEGORIES, fetchProducts, updateProduct, type Product } from './products-api'
+import { CATEGORY_LABELS, PRODUCT_CATEGORIES, fetchProducts,
+  updateProduct,
+  type Product,
+  type ProductsSort,
+} from './products-api'
 import { ProductFormDialog } from './ProductFormDialog'
 import { ProductPlaceholder } from './ProductPlaceholder'
 
@@ -32,6 +36,13 @@ const CATEGORY_FILTERS = [
     label: CATEGORY_LABELS[category],
     category,
   })),
+]
+
+// In the address as ?orden=menor-precio; by name when not set
+const SORT_OPTIONS: readonly { value: string; label: string; sort: ProductsSort }[] = [
+  { value: 'nombre', label: 'Nombre', sort: 'name' },
+  { value: 'menor-precio', label: 'Menor precio', sort: 'price_asc' },
+  { value: 'mayor-precio', label: 'Mayor precio', sort: 'price_desc' },
 ]
 
 function ProductImage({ product }: { product: Product }) {
@@ -103,6 +114,7 @@ export function ProductsPage() {
   const search = params.get('buscar') ?? ''
   const availability = AVAILABILITY_FILTERS.find((f) => f.value === params.get('disponibles')) ?? AVAILABILITY_FILTERS[0]
   const category = CATEGORY_FILTERS.find((f) => f.value === params.get('categoria')) ?? CATEGORY_FILTERS[0]
+  const sort = SORT_OPTIONS.find((o) => o.value === params.get('orden')) ?? SORT_OPTIONS[0]!
   const page = Math.max(1, Number(params.get('pagina')) || 1)
 
   // Filters live in the page's address, like the orders list; any change goes back to page 1
@@ -122,7 +134,7 @@ export function ProductsPage() {
     return () => clearTimeout(timer)
   })
 
-  const filters = { search, available: availability.available, category: category.category, page, pageSize: 20 }
+  const filters = { search, available: availability.available, category: category.category, sort: sort.sort, page, pageSize: 20 }
   const { data, isPending, isError, isFetching, refetch } = useQuery({
     queryKey: ['products', filters],
     queryFn: () => fetchProducts(filters),
@@ -158,6 +170,13 @@ export function ProductsPage() {
           options={CATEGORY_FILTERS}
           value={category.value}
           onChange={(value) => setParam('categoria', value === 'todos' ? null : value)}
+          className="flex w-full sm:w-auto"
+        />
+        <SegmentedControl
+          label="Ordenar por"
+          options={SORT_OPTIONS}
+          value={sort.value}
+          onChange={(value) => setParam('orden', value === 'nombre' ? null : value)}
           className="flex w-full sm:w-auto"
         />
         <SearchInput
