@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { cn } from 'cn'
-import { ChevronDownIcon, LogOutIcon, MenuIcon } from 'lucide-react'
+import { ChevronDownIcon, ClockIcon, LogOutIcon, MenuIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { UpcomingOrdersSidebar } from '@/features/orders/UpcomingOrdersSidebar'
 import {
@@ -36,6 +36,7 @@ export function AppLayout() {
   const sections = SECTIONS.filter((section) => can(section.permission))
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [deliveriesOpen, setDeliveriesOpen] = useState(false)
 
   // The same links in the header (computers) and in the side menu (tablets and phones)
   const links = (inMenu: boolean) =>
@@ -102,27 +103,47 @@ export function AppLayout() {
               {links(false)}
             </nav>
 
-            {/* Who is logged in; clicking opens a small menu with "Cerrar sesión" */}
-            {user && (
-              <div className="hidden justify-self-end lg:block">
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted">
-                    <UserBadge user={user} role={role} />
-                    <ChevronDownIcon className="size-4 text-muted-foreground" aria-hidden />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-48">
-                    <DropdownMenuGroup>
-                      <DropdownMenuLabel>Usuario: {user.username}</DropdownMenuLabel>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>
-                      <LogOutIcon aria-hidden />
-                      Cerrar sesión
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
+            <div className="flex items-center gap-1 justify-self-end">
+              {/* Below wide screens the upcoming deliveries open in a panel from the right */}
+              {can('orders.read') && (
+                <Sheet open={deliveriesOpen} onOpenChange={setDeliveriesOpen}>
+                  <SheetTrigger
+                    render={
+                      <Button variant="ghost" size="icon" className="xl:hidden" aria-label="Ver próximas entregas" />
+                    }
+                  >
+                    <ClockIcon />
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-80 overflow-y-auto sm:max-w-80">
+                    <SheetHeader className="sr-only">
+                      <SheetTitle>Próximas entregas</SheetTitle>
+                    </SheetHeader>
+                    <UpcomingOrdersSidebar onSelect={() => setDeliveriesOpen(false)} />
+                  </SheetContent>
+                </Sheet>
+              )}
+              {/* Who is logged in; clicking opens a small menu with "Cerrar sesión" */}
+              {user && (
+                <div className="hidden lg:block">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted">
+                      <UserBadge user={user} role={role} />
+                      <ChevronDownIcon className="size-4 text-muted-foreground" aria-hidden />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-48">
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel>Usuario: {user.username}</DropdownMenuLabel>
+                      </DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={logout}>
+                        <LogOutIcon aria-hidden />
+                        Cerrar sesión
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">

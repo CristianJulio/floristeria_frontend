@@ -40,7 +40,17 @@ function dayLabel(date: string, today: string) {
   return formatDeliveryDay(date)
 }
 
-function OrderItem({ order, now, today }: { order: Order; now: Date; today: string }) {
+function OrderItem({
+  order,
+  now,
+  today,
+  onSelect,
+}: {
+  order: Order
+  now: Date
+  today: string
+  onSelect?: (() => void) | undefined
+}) {
   const minutes = minutesToDelivery(order, now)
   const urgency = urgencyOf(minutes, order.deliveryDate, today)
   const countdown = formatCountdown(minutes)
@@ -49,6 +59,7 @@ function OrderItem({ order, now, today }: { order: Order; now: Date; today: stri
     <li>
       <Link
         to={`/pedidos/${order.id}`}
+        onClick={onSelect}
         className={cn(
           'flex flex-col gap-0.5 rounded-md border-l-4 px-3 py-2 text-sm transition-colors hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
           URGENCY_CLASSES[urgency],
@@ -69,7 +80,8 @@ function OrderItem({ order, now, today }: { order: Order; now: Date; today: stri
 
 // Every open order, soonest delivery first, coloured by how close its time is. The list refreshes by
 // itself every minute, and right away when an order changes anywhere in the app
-export function UpcomingOrdersSidebar() {
+// onSelect runs when an order is opened, so a panel holding the list can close itself
+export function UpcomingOrdersSidebar({ onSelect }: { onSelect?: () => void }) {
   const now = useNow()
   const today = todayInColombia()
   const { data, isPending, isError } = useQuery({
@@ -107,7 +119,7 @@ export function UpcomingOrdersSidebar() {
               <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{group.label}</h3>
               <ul className="flex flex-col gap-1.5">
                 {group.orders.map((order) => (
-                  <OrderItem key={order.id} order={order} now={now} today={today} />
+                  <OrderItem key={order.id} order={order} now={now} today={today} onSelect={onSelect} />
                 ))}
               </ul>
             </section>
