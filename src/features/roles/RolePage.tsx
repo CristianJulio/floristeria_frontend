@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
+import { CharCount } from '@/components/CharCount'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -62,11 +63,13 @@ function RoleDataForm({
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isDirty },
   } = useForm<RoleDataValues>({
     resolver: zodResolver(roleDataSchema),
     defaultValues: { name: role?.name ?? '', description: role?.description ?? '' },
   })
+  const description = useWatch({ control, name: 'description' }) ?? ''
 
   return (
     <form id="role-data" onSubmit={handleSubmit(onSave)} noValidate className="flex flex-col gap-4">
@@ -78,6 +81,7 @@ function RoleDataForm({
       <div className="flex flex-col gap-2">
         <Label htmlFor="role-description">Descripción (opcional)</Label>
         <Textarea id="role-description" disabled={!canEdit} maxLength={255} {...register('description')} />
+        <CharCount value={description} max={255} />
         {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
       </div>
       {error && (

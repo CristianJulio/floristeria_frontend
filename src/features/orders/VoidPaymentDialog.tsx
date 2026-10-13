@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { CharCount } from '@/components/CharCount'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -77,7 +78,7 @@ export function VoidPaymentDialog({ order, payment, onClose }: Props) {
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />
-            <span className="self-end text-xs text-muted-foreground">{reason.length}/255</span>
+            <CharCount value={reason} max={255} />
           </div>
           {error && (
             <p role="alert" className="text-sm text-destructive">

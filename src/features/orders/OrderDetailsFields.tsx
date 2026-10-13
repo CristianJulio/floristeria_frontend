@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { cn } from 'cn'
 import { useFormContext, useWatch } from 'react-hook-form'
+import { CharCount } from '@/components/CharCount'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -66,6 +67,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
   const phoneCountry = useWatch({ control, name: 'phoneCountry' })
   const city = useWatch({ control, name: 'city' })
   const cardMessage = useWatch({ control, name: 'cardMessage' }) ?? ''
+  const deliveryNotes = useWatch({ control, name: 'deliveryNotes' }) ?? ''
   const deliveryFee = (useWatch({ control, name: 'deliveryFee' }) ?? '').trim()
 
   return (
@@ -123,6 +125,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
               placeholder="Portería, referencias, a quién preguntar…"
               {...register('deliveryNotes')}
             />
+            <CharCount value={deliveryNotes} max={255} />
           </FormField>
         </CardContent>
       </Card>
@@ -277,7 +280,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
               className="min-h-32"
               {...register('cardMessage')}
             />
-            <span className="self-end text-xs text-muted-foreground tabular-nums">{cardMessage.length}/1000</span>
+            <CharCount value={cardMessage} max={1000} />
           </FormField>
         </CardContent>
       </Card>

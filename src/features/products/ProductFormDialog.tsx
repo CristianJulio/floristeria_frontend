@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { CharCount } from '@/components/CharCount'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -93,6 +94,7 @@ export function ProductFormDialog({ product, onClose }: Props) {
 
   const price = useWatch({ control, name: 'price' })
   const category = useWatch({ control, name: 'category' })
+  const description = useWatch({ control, name: 'description' }) ?? ''
   const pricePreview = /^\d+$/.test((price ?? '').trim()) ? formatMoney(Number(price)) : null
 
   const mutation = useMutation({
@@ -176,6 +178,7 @@ export function ProductFormDialog({ product, onClose }: Props) {
           <div className="flex flex-col gap-2">
             <Label htmlFor="product-description">Descripción (opcional)</Label>
             <Textarea id="product-description" maxLength={500} {...register('description')} />
+            <CharCount value={description} max={500} />
             {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
           </div>
 
