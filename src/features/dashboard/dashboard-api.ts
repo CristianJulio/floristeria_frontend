@@ -46,6 +46,12 @@ export type CollectedByMethod = {
   net: number
 }
 
+// Catalog products ranked by units sold in the range: the ten best, and the ten worst among the
+// products on sale today (which includes the ones that sold nothing)
+export type TopProduct = { id: string; name: string; category: string; units: number; revenue: number }
+
+export type TopProducts = { best: TopProduct[]; worst: TopProduct[] }
+
 export type OrdersByStatus = {
   rows: { status: OrderStatus; count: number }[]
   total: number
@@ -57,4 +63,5 @@ const get = async <T>(path: string, from: string, to: string) =>
 export const fetchIncome = (from: string, to: string) => get<Income>('income', from, to)
 export const fetchPendingPayments = (from: string, to: string) => get<PendingPayments>('pending-payments', from, to)
 export const fetchCollectedByMethod = (from: string, to: string) => get<CollectedByMethod>('collected-by-method', from, to)
+export const fetchTopProducts = (from: string, to: string) => get<TopProducts>('top-products', from, to)
 export const fetchOrdersByStatus = (from: string, to: string) => get<OrdersByStatus>('orders-by-status', from, to)

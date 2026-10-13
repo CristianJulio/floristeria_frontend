@@ -10,6 +10,7 @@ import { CollectedByMethodCard } from './CollectedByMethodCard'
 import { IncomeCard } from './IncomeCard'
 import { OrdersByStatusCard } from './OrdersByStatusCard'
 import { PendingPaymentsCard } from './PendingPaymentsCard'
+import { TopProductsCard } from './TopProductsCard'
 
 const PERIODS = [
   { value: 'dia', label: 'Día' },
@@ -139,6 +140,8 @@ export function DashboardPage() {
         <CollectedByMethodCard from={from} to={to} />
         <OrdersByStatusCard from={from} to={to} />
         <PendingPaymentsCard from={from} to={to} />
+        <TopProductsCard kind="best" from={from} to={to} />
+        <TopProductsCard kind="worst" from={from} to={to} />
       </div>
     </section>
   )
