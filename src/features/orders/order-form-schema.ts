@@ -160,6 +160,8 @@ export function toItemInput(item: OrderFormValues['items'][number]): OrderItemIn
     deceasedName: item.deceasedName.trim(),
     roomNumber: item.roomNumber.trim(),
     withRibbon: item.withRibbon,
+    // The text only goes with a ribbon, and is left out when empty
+    ...(item.withRibbon && item.ribbonText.trim() && { ribbonText: item.ribbonText.trim() }),
     withCard: item.withCard,
   }
 }
@@ -180,6 +182,7 @@ export const orderFormSchema = orderDetailsFields
           deceasedName: z.string().trim().max(100, 'Máximo 100 caracteres'),
           roomNumber: z.string().trim().max(20, 'Máximo 20 caracteres'),
           withRibbon: z.boolean(),
+          ribbonText: z.string().trim().max(100, 'Máximo 100 caracteres'),
           withCard: z.boolean(),
         }),
       )

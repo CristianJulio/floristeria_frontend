@@ -15,6 +15,7 @@ export function CrownLines({ item }: { item: OrderItem }) {
           {item.surcharge > 0 && ` (+${formatMoney(item.surcharge)})`}
         </span>
       )}
+      {item.withRibbon && item.ribbonText && <span className="block">Cinta: «{item.ribbonText}»</span>}
     </span>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PlusIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CharCount } from '@/components/CharCount'
 import { Input } from '@/components/ui/input'
 import type { Product } from '@/features/products/products-api'
 import { CROWN_RIBBON_AND_CARD_SURCHARGE, formatMoney, surchargeOf } from './order-format'
@@ -90,6 +91,19 @@ function CrownDetails({
           </span>
         )}
       </div>
+      {item.withRibbon && (
+        <div className="flex flex-col gap-1">
+          <Input
+            aria-label="Texto de la cinta"
+            placeholder="Texto de la cinta (opcional)"
+            maxLength={100}
+            className="h-8"
+            value={item.ribbonText}
+            onChange={(event) => onChange({ ribbonText: event.target.value })}
+          />
+          <CharCount value={item.ribbonText} max={100} />
+        </div>
+      )}
     </div>
   )
 }
@@ -120,6 +134,7 @@ export function OrderItemsEditor({ items, onChange, error, itemErrors, unavailab
           deceasedName: '',
           roomNumber: '',
           withRibbon: false,
+          ribbonText: '',
           withCard: false,
         },
       ])

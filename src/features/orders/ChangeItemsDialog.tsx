@@ -53,6 +53,7 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
     deceasedName: item.deceasedName ?? '',
     roomNumber: item.roomNumber ?? '',
     withRibbon: item.withRibbon,
+    ribbonText: item.ribbonText ?? '',
     withCard: item.withCard,
     productName: currentProducts.get(item.productId)?.name ?? item.productName,
     price: currentProducts.get(item.productId)?.price ?? item.price,

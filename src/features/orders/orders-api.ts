@@ -16,6 +16,8 @@ export type OrderItem = {
   deceasedName: string | null
   roomNumber: string | null
   withRibbon: boolean
+  // What the ribbon says; null when it has no text
+  ribbonText: string | null
   withCard: boolean
   // What carrying both ribbon and card adds to the line
   surcharge: number
@@ -28,6 +30,7 @@ export type OrderItemInput = {
   deceasedName?: string
   roomNumber?: string
   withRibbon?: boolean
+  ribbonText?: string
   withCard?: boolean
 }
 
