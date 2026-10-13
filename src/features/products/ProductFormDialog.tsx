@@ -31,7 +31,7 @@ import {
 // Same limits as the backend's product schema; the price is typed as text and converted
 const productFormSchema = z.object({
   name: z.string().trim().min(1, 'Escribe el nombre').max(50, 'Máximo 50 caracteres'),
-  description: z.string().trim().max(255, 'Máximo 255 caracteres'),
+  description: z.string().trim().max(500, 'Máximo 500 caracteres'),
   category: z.enum(PRODUCT_CATEGORIES, { error: 'Elige la categoría' }),
   price: z
     .string()
@@ -173,7 +173,7 @@ export function ProductFormDialog({ product, onClose }: Props) {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="product-description">Descripción (opcional)</Label>
-            <Textarea id="product-description" maxLength={255} {...register('description')} />
+            <Textarea id="product-description" maxLength={500} {...register('description')} />
             {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
           </div>
 
