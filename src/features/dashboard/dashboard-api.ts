@@ -17,19 +17,24 @@ export type Income = {
   pendingRefund: number
 }
 
-// Orders of the range that still owe money; `orders` is the first 50, the count and sum cover all
+// Orders of the range with money still to move: the customer owes the shop (kind PAYMENT) or the shop
+// owes the customer back (kind REFUND). `orders` is the first 50; the counts and sums cover all of them
 export type PendingPayments = {
-  orderCount: number
-  pendingSum: number
+  debtCount: number
+  debtSum: number
+  refundCount: number
+  refundSum: number
   orders: {
     id: string
+    status: OrderStatus
     recipientName: string
     deliveryDate: string
     deliveryTimeFrom: string | null
     deliveryTimeTo: string | null
     total: number
     netPaid: number
-    pending: number
+    kind: 'PAYMENT' | 'REFUND'
+    amount: number
   }[]
 }
 
