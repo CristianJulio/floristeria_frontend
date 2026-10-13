@@ -8,6 +8,7 @@ export type Income = {
   from: string
   to: string
   orderCount: number
+  cancelledCount: number
   items: number
   delivery: number
   retainedFromCancelled: number
@@ -52,6 +53,42 @@ export type TopProduct = { id: string; name: string; category: string; units: nu
 
 export type TopProducts = { best: TopProduct[]; worst: TopProduct[] }
 
+// What the orders delivered are worth, bar by bar. The step (day, week or month) is picked by the
+// backend from the length of the range; every step in the range is there, with zero when empty
+export type SalesByDay = {
+  bucket: 'day' | 'week' | 'month'
+  rows: { start: string; total: number; orders: number }[]
+}
+
+export type SalesByCategory = {
+  rows: { category: string; units: number; revenue: number }[]
+  total: number
+}
+
+export type Crowns = {
+  crowns: number
+  revenue: number
+  ribbonAndCard: number
+  ribbonOnly: number
+  cardOnly: number
+  neither: number
+  surcharge: number
+}
+
+export type Extras = {
+  lines: number
+  units: number
+  revenue: number
+  top: { name: string; units: number; revenue: number }[]
+}
+
+export type Cancellations = {
+  cancelled: number
+  total: number
+  retained: number
+  reasons: { reason: string; count: number }[]
+}
+
 export type OrdersByStatus = {
   rows: { status: OrderStatus; count: number }[]
   total: number
@@ -64,4 +101,9 @@ export const fetchIncome = (from: string, to: string) => get<Income>('income', f
 export const fetchPendingPayments = (from: string, to: string) => get<PendingPayments>('pending-payments', from, to)
 export const fetchCollectedByMethod = (from: string, to: string) => get<CollectedByMethod>('collected-by-method', from, to)
 export const fetchTopProducts = (from: string, to: string) => get<TopProducts>('top-products', from, to)
+export const fetchSalesByDay = (from: string, to: string) => get<SalesByDay>('sales-by-day', from, to)
+export const fetchSalesByCategory = (from: string, to: string) => get<SalesByCategory>('sales-by-category', from, to)
+export const fetchCrowns = (from: string, to: string) => get<Crowns>('crowns', from, to)
+export const fetchExtras = (from: string, to: string) => get<Extras>('extras', from, to)
+export const fetchCancellations = (from: string, to: string) => get<Cancellations>('cancellations', from, to)
 export const fetchOrdersByStatus = (from: string, to: string) => get<OrdersByStatus>('orders-by-status', from, to)

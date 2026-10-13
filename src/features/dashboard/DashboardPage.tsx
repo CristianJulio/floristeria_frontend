@@ -6,10 +6,15 @@ import { Label } from '@/components/ui/label'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { addDays, monthRange, todayInColombia, weekRange } from '@/lib/dates'
 import { formatDeliveryDay } from '@/features/orders/order-format'
+import { CancellationsCard } from './CancellationsCard'
 import { CollectedByMethodCard } from './CollectedByMethodCard'
+import { CrownsCard } from './CrownsCard'
+import { ExtrasCard } from './ExtrasCard'
 import { IncomeCard } from './IncomeCard'
 import { OrdersByStatusCard } from './OrdersByStatusCard'
 import { PendingPaymentsCard } from './PendingPaymentsCard'
+import { SalesByCategoryCard } from './SalesByCategoryCard'
+import { SalesByDayCard } from './SalesByDayCard'
 import { SummaryStrip } from './SummaryStrip'
 import { TopProductsCard } from './TopProductsCard'
 
@@ -58,6 +63,11 @@ export function DashboardPage() {
   const shown = period === 'rango' ? null : periodDays(period, day, today)
   const from = shown?.from ?? range.from
   const to = shown?.to ?? range.to
+  // The period just before, as long as this one: what the average order is compared with
+  const length = Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1
+  const previous = { from: addDays(from, -length), to: addDays(from, -1) }
+  // The sales chart needs more than one day to show anything: for a day, the week it belongs to
+  const chart = from === to ? weekRange(from) : { from, to }
   const label = shown?.label ?? `${formatDeliveryDay(range.from)} – ${formatDeliveryDay(range.to)}`
   // Whether it is the day, week or month that contains today, where "Volver a hoy" has nothing to do
   const isCurrent = today >= from && today <= to
@@ -137,13 +147,24 @@ export function DashboardPage() {
       </div>
 
       {/* Every card follows the period chosen above */}
-      <SummaryStrip from={from} to={to} />
+      <SummaryStrip from={from} to={to} previous={previous} />
 
+      {/* Wide chart first, then the cards two by two, every pair the same height */}
       <div className="grid gap-4 lg:grid-cols-2">
+        <SalesByDayCard
+          from={chart.from}
+          to={chart.to}
+          {...(from === to && { highlight: from })}
+          className="lg:col-span-2"
+        />
         <IncomeCard from={from} to={to} />
         <OrdersByStatusCard from={from} to={to} />
         <CollectedByMethodCard from={from} to={to} />
         <PendingPaymentsCard from={from} to={to} />
+        <SalesByCategoryCard from={from} to={to} />
+        <CancellationsCard from={from} to={to} />
+        <CrownsCard from={from} to={to} />
+        <ExtrasCard from={from} to={to} />
         <TopProductsCard kind="best" from={from} to={to} />
         <TopProductsCard kind="worst" from={from} to={to} />
       </div>
