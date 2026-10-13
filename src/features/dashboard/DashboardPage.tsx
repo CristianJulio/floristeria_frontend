@@ -6,7 +6,10 @@ import { Label } from '@/components/ui/label'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { addDays, monthRange, todayInColombia, weekRange } from '@/lib/dates'
 import { formatDeliveryDay } from '@/features/orders/order-format'
+import { CollectedByMethodCard } from './CollectedByMethodCard'
 import { IncomeCard } from './IncomeCard'
+import { OrdersByStatusCard } from './OrdersByStatusCard'
+import { PendingPaymentsCard } from './PendingPaymentsCard'
 
 const PERIODS = [
   { value: 'dia', label: 'Día' },
@@ -53,6 +56,7 @@ export function DashboardPage() {
   const shown = period === 'rango' ? null : periodDays(period, day, today)
   const from = shown?.from ?? range.from
   const to = shown?.to ?? range.to
+  const label = shown?.label ?? `${formatDeliveryDay(range.from)} – ${formatDeliveryDay(range.to)}`
   // Whether it is the day, week or month that contains today, where "Volver a hoy" has nothing to do
   const isCurrent = today >= from && today <= to
 
@@ -60,9 +64,7 @@ export function DashboardPage() {
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-0.5">
         <h1 className="text-xl font-semibold">Resumen</h1>
-        <p className="text-sm text-muted-foreground">
-          Lo que valen los pedidos según su día de entrega, separado en pedidos y domicilios.
-        </p>
+        <p className="text-sm text-muted-foreground">{label}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -131,13 +133,12 @@ export function DashboardPage() {
         )}
       </div>
 
-      <div className="max-w-md">
-        <IncomeCard
-          title="Ingresos"
-          subtitle={shown?.label ?? `${formatDeliveryDay(range.from)} – ${formatDeliveryDay(range.to)}`}
-          from={from}
-          to={to}
-        />
+      {/* Every card follows the period chosen above */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <IncomeCard from={from} to={to} />
+        <OrdersByStatusCard from={from} to={to} />
+        <CollectedByMethodCard from={from} to={to} />
+        <PendingPaymentsCard from={from} to={to} className="lg:col-span-2" />
       </div>
     </section>
   )
