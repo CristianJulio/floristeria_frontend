@@ -40,11 +40,15 @@ function DeliveryCard({ order }: { order: Order }) {
             <div className="text-muted-foreground">{place}</div>
           </Field>
           {order.deliveryNotes && <Field label="Indicaciones">{order.deliveryNotes}</Field>}
-          <Field label="Teléfono de contacto">
-            <a href={`tel:${order.responsiblePhone}`} className="underline-offset-4 hover:underline">
-              {order.responsiblePhone}
-            </a>
-          </Field>
+          {order.responsibleContactType === 'PHONE' ? (
+            <Field label="Teléfono de contacto">
+              <a href={`tel:${order.responsiblePhone}`} className="underline-offset-4 hover:underline">
+                {order.responsiblePhone}
+              </a>
+            </Field>
+          ) : (
+            <Field label="Usuario de WhatsApp">{order.responsiblePhone}</Field>
+          )}
           <Field label="Remitente">{order.senderName}</Field>
         </dl>
       </CardContent>

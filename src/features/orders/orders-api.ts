@@ -1,4 +1,5 @@
 import { apiFetch } from '@/lib/api-client'
+import type { ContactType } from '@/lib/phone'
 
 export const ORDER_STATUSES = ['PENDING', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'] as const
 export type OrderStatus = (typeof ORDER_STATUSES)[number]
@@ -60,6 +61,7 @@ export type Order = {
   deliveryNotes: string | null
   cardMessage: string | null
   responsiblePhone: string
+  responsibleContactType: ContactType
   deliveryDate: string
   deliveryTimeFrom: string | null
   deliveryTimeTo: string | null
@@ -116,6 +118,7 @@ export type CreateOrderInput = {
   deliveryNotes?: string
   cardMessage?: string
   responsiblePhone: string
+  responsibleContactType: ContactType
   deliveryDate: string
   deliveryTimeFrom?: string
   deliveryTimeTo?: string
@@ -139,6 +142,7 @@ export type UpdateOrderInput = {
   deliveryNotes?: string | null
   cardMessage?: string | null
   responsiblePhone?: string
+  responsibleContactType?: ContactType
   deliveryDate?: string
   deliveryTimeFrom?: string | null
   deliveryTimeTo?: string | null

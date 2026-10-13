@@ -47,6 +47,7 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
     setValue,
     formState: { errors },
   } = useFormContext<OrderDetailsFormValues>()
+  const contactType = useWatch({ control, name: 'contactType' })
   const phoneCountry = useWatch({ control, name: 'phoneCountry' })
   const city = useWatch({ control, name: 'city' })
   const cardMessage = useWatch({ control, name: 'cardMessage' }) ?? ''
@@ -168,42 +169,64 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
             <Input id="senderName" aria-invalid={!!errors.senderName} {...register('senderName')} />
           </FormField>
           <FormField
-            id="phoneNumber"
-            label="Teléfono de contacto"
-            error={errors.phoneOtherCode?.message ?? errors.phoneNumber?.message}
+            id={contactType === 'PHONE' ? 'phoneNumber' : 'whatsappUsername'}
+            label="Contacto"
+            error={
+              contactType === 'PHONE'
+                ? (errors.phoneOtherCode?.message ?? errors.phoneNumber?.message)
+                : errors.whatsappUsername?.message
+            }
           >
-            <div className="flex gap-2">
-              <select
-                aria-label="País"
-                className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
-                {...register('phoneCountry')}
-              >
-                {PHONE_COUNTRIES.map((country) => (
-                  <option key={country.code} value={country.code}>
-                    {country.label}
-                  </option>
-                ))}
-                <option value={OTHER_COUNTRY}>Otro</option>
-              </select>
-              {phoneCountry === OTHER_COUNTRY && (
-                <Input
-                  aria-label="Código del país"
-                  placeholder="+34"
-                  inputMode="numeric"
-                  className="w-20"
-                  aria-invalid={!!errors.phoneOtherCode}
-                  {...register('phoneOtherCode')}
-                />
-              )}
+            <select
+              aria-label="Tipo de contacto"
+              className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+              {...register('contactType')}
+            >
+              <option value="PHONE">Teléfono</option>
+              <option value="WHATSAPP_USERNAME">Usuario de WhatsApp</option>
+            </select>
+            {contactType === 'WHATSAPP_USERNAME' ? (
               <Input
-                id="phoneNumber"
-                type="tel"
-                inputMode="tel"
-                placeholder="300 123 4567"
-                aria-invalid={!!errors.phoneNumber}
-                {...register('phoneNumber')}
+                id="whatsappUsername"
+                placeholder="usuario"
+                autoComplete="off"
+                aria-invalid={!!errors.whatsappUsername}
+                {...register('whatsappUsername')}
               />
-            </div>
+            ) : (
+              <div className="flex gap-2">
+                <select
+                  aria-label="País"
+                  className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+                  {...register('phoneCountry')}
+                >
+                  {PHONE_COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.label}
+                    </option>
+                  ))}
+                  <option value={OTHER_COUNTRY}>Otro</option>
+                </select>
+                {phoneCountry === OTHER_COUNTRY && (
+                  <Input
+                    aria-label="Código del país"
+                    placeholder="+34"
+                    inputMode="numeric"
+                    className="w-20"
+                    aria-invalid={!!errors.phoneOtherCode}
+                    {...register('phoneOtherCode')}
+                  />
+                )}
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="300 123 4567"
+                  aria-invalid={!!errors.phoneNumber}
+                  {...register('phoneNumber')}
+                />
+              </div>
+            )}
           </FormField>
         </CardContent>
       </Card>

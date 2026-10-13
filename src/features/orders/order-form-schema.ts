@@ -2,6 +2,9 @@ import { z } from 'zod'
 import { todayInColombia } from '@/lib/dates'
 import {
   OTHER_COUNTRY,
+  CONTACT_TYPES,
+  cleanWhatsappUsername,
+  isValidWhatsappUsername,
   PHONE_COUNTRIES,
   isValidInternationalPhone,
   onlyDigits,
@@ -26,6 +29,8 @@ const orderDetailsFields = z.object({
   deliveryNotes: optional(255),
   cardMessage: optional(255),
   senderName: required(50),
+  contactType: z.enum(CONTACT_TYPES),
+  whatsappUsername: z.string(),
   phoneCountry: z.string(),
   phoneOtherCode: z.string(),
   phoneNumber: z.string(),
@@ -49,21 +54,26 @@ function checkDetails(values: DetailsValues, ctx: z.RefinementCtx, unchangedDate
     ctx.addIssue({ code: 'custom', path: ['deliveryDate'], message: 'La fecha de entrega no puede estar en el pasado' })
   }
 
-  const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
-  if (values.phoneCountry === OTHER_COUNTRY && !onlyDigits(values.phoneOtherCode)) {
-    ctx.addIssue({ code: 'custom', path: ['phoneOtherCode'], message: 'Escribe el código del país' })
-  } else if (!onlyDigits(values.phoneNumber)) {
-    ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'Escribe el teléfono' })
-  } else if (!isValidInternationalPhone(toInternationalPhone(code, values.phoneNumber))) {
-    ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'El teléfono no parece válido' })
+  if (values.contactType === 'WHATSAPP_USERNAME') {
+    const username = cleanWhatsappUsername(values.whatsappUsername)
+    if (!username) {
+      ctx.addIssue({ code: 'custom', path: ['whatsappUsername'], message: 'Escribe el usuario de WhatsApp' })
+    } else if (!isValidWhatsappUsername(username)) {
+      ctx.addIssue({ code: 'custom', path: ['whatsappUsername'], message: 'Usa de 3 a 35 letras, números, puntos o guiones bajos' })
+    }
+  } else {
+    const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
+    if (values.phoneCountry === OTHER_COUNTRY && !onlyDigits(values.phoneOtherCode)) {
+      ctx.addIssue({ code: 'custom', path: ['phoneOtherCode'], message: 'Escribe el código del país' })
+    } else if (!onlyDigits(values.phoneNumber)) {
+      ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'Escribe el teléfono' })
+    } else if (!isValidInternationalPhone(toInternationalPhone(code, values.phoneNumber))) {
+      ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: 'El teléfono no parece válido' })
+    }
   }
 
   if (values.deliveryTimeFrom && values.deliveryTimeTo && values.deliveryTimeFrom > values.deliveryTimeTo) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['deliveryTimeTo'],
-      message: 'La hora final no puede ser antes de la inicial',
-    })
+    ctx.addIssue({ code: 'custom', path: ['deliveryTimeTo'], message: 'La hora final no puede ser antes de la inicial' })
   }
 }
 
@@ -100,6 +110,8 @@ export function emptyOrderForm(): OrderFormValues {
     deliveryNotes: '',
     cardMessage: '',
     senderName: '',
+    contactType: 'PHONE',
+    whatsappUsername: '',
     phoneCountry: '57',
     phoneOtherCode: '',
     phoneNumber: '',
@@ -142,7 +154,11 @@ export function orderToDetailsForm(order: Order): OrderDetailsFormValues {
     deliveryNotes: order.deliveryNotes ?? '',
     cardMessage: order.cardMessage ?? '',
     senderName: order.senderName,
-    ...splitPhone(order.responsiblePhone),
+    contactType: order.responsibleContactType,
+    whatsappUsername: order.responsibleContactType === 'WHATSAPP_USERNAME' ? order.responsiblePhone : '',
+    ...(order.responsibleContactType === 'PHONE'
+      ? splitPhone(order.responsiblePhone)
+      : { phoneCountry: '57', phoneOtherCode: '', phoneNumber: '' }),
     deliveryDate: order.deliveryDate,
     deliveryTimeFrom: order.deliveryTimeFrom ?? '',
     deliveryTimeTo: order.deliveryTimeTo ?? '',
@@ -151,6 +167,7 @@ export function orderToDetailsForm(order: Order): OrderDetailsFormValues {
 }
 
 function phoneOf(values: DetailsValues) {
+  if (values.contactType === 'WHATSAPP_USERNAME') return cleanWhatsappUsername(values.whatsappUsername)
   const code = values.phoneCountry === OTHER_COUNTRY ? values.phoneOtherCode : values.phoneCountry
   return toInternationalPhone(code, values.phoneNumber)
 }
@@ -171,6 +188,7 @@ export function toCreateOrderInput(values: OrderFormValues): CreateOrderInput {
     deliveryNotes: optionalText(values.deliveryNotes) ?? undefined,
     cardMessage: cardText(values.cardMessage) ?? undefined,
     responsiblePhone: phoneOf(values),
+    responsibleContactType: values.contactType,
     deliveryDate: values.deliveryDate,
     deliveryTimeFrom: values.deliveryTimeFrom || undefined,
     deliveryTimeTo: values.deliveryTimeTo || undefined,
@@ -191,6 +209,7 @@ export function toUpdateOrderInput(values: OrderDetailsFormValues, order: Order)
     deliveryNotes: optionalText(values.deliveryNotes),
     cardMessage: cardText(values.cardMessage),
     responsiblePhone: phoneOf(values),
+    responsibleContactType: values.contactType,
     deliveryDate: values.deliveryDate,
     deliveryTimeFrom: values.deliveryTimeFrom || null,
     deliveryTimeTo: values.deliveryTimeTo || null,
@@ -199,6 +218,11 @@ export function toUpdateOrderInput(values: OrderDetailsFormValues, order: Order)
   const changes: UpdateOrderInput = {}
   for (const key of Object.keys(next) as (keyof UpdateOrderInput)[]) {
     if (next[key] !== order[key]) Object.assign(changes, { [key]: next[key] })
+  }
+  // The API takes the contact and its type together
+  if ('responsiblePhone' in changes || 'responsibleContactType' in changes) {
+    changes.responsiblePhone = next.responsiblePhone
+    changes.responsibleContactType = next.responsibleContactType
   }
   return changes
 }
