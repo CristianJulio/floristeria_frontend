@@ -68,12 +68,10 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
   const activeCount = [customDates, customStatuses, filters.pendingPayment, filters.pendingRefund].filter(Boolean).length
   const [open, setOpen] = useState(false)
 
-  // From "Todos", a status shows only that one; choosing every status, or removing the last one, is "Todos" again
+  // One status at a time; choosing the one already chosen goes back to "Todos"
   const toggleStatus = (status: (typeof ORDER_STATUSES)[number]) => {
-    const statuses = filters.statuses.includes(status)
-      ? filters.statuses.filter((s) => s !== status)
-      : [...filters.statuses, status]
-    onChange({ statuses: statuses.length === ORDER_STATUSES.length ? [] : statuses })
+    const isOnlyOne = filters.statuses.length === 1 && filters.statuses[0] === status
+    onChange({ statuses: isOnlyOne ? [] : [status] })
   }
 
   return (
@@ -161,15 +159,22 @@ export function OrdersFilterBar({ filters, onChange }: Props) {
             <fieldset className="flex flex-col gap-2">
               <legend className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Pagos</legend>
               <div className="flex flex-wrap gap-1.5">
+                {/* One at a time, like the statuses */}
+                <FilterChip
+                  active={!filters.pendingPayment && !filters.pendingRefund}
+                  onClick={() => onChange({ pendingPayment: false, pendingRefund: false })}
+                >
+                  Todos
+                </FilterChip>
                 <FilterChip
                   active={filters.pendingPayment}
-                  onClick={() => onChange({ pendingPayment: !filters.pendingPayment })}
+                  onClick={() => onChange({ pendingPayment: true, pendingRefund: false })}
                 >
                   Con pago pendiente
                 </FilterChip>
                 <FilterChip
                   active={filters.pendingRefund}
-                  onClick={() => onChange({ pendingRefund: !filters.pendingRefund })}
+                  onClick={() => onChange({ pendingPayment: false, pendingRefund: true })}
                 >
                   Con reembolso pendiente
                 </FilterChip>
