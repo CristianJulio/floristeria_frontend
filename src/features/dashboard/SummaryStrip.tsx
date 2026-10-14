@@ -3,9 +3,24 @@ import { cn } from 'cn'
 import { formatMoney } from '@/lib/money'
 import { fetchIncome, type Income } from './dashboard-api'
 
-function Tile({ label, value, note, muted }: { label: string; value: string; note?: string; muted?: boolean }) {
+// What the shop charges for each order it handles, in pesos
+const FEE_PER_ORDER = 1000
+
+function Tile({
+  label,
+  value,
+  note,
+  muted,
+  className,
+}: {
+  label: string
+  value: string
+  note?: string
+  muted?: boolean
+  className?: string
+}) {
   return (
-    <div className="flex flex-col gap-0.5 rounded-xl border bg-card px-4 py-3">
+    <div className={cn('flex flex-col gap-0.5 rounded-xl border bg-card px-4 py-3', className)}>
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className={cn('text-2xl font-semibold tabular-nums', muted && 'text-muted-foreground')}>{value}</span>
       <span className="min-h-4 text-xs text-muted-foreground">{note}</span>
@@ -26,8 +41,8 @@ function ticketNote(current: number | null, previous: number | null) {
   return `${change > 0 ? '▲' : '▼'} ${Math.abs(change)} % frente al período anterior`
 }
 
-// The figures looked at most, in two rows of three: what the orders are worth and how many, their
-// average, how many were cancelled, and what has been collected, is still to collect or to give back.
+// The figures looked at most, in three rows: two of three tiles and a last one across the width. What the orders are worth and how many, their
+// average, how many were cancelled, and what has been collected, is still to collect or to give back, and the fee owed for the orders.
 // The cards below only break them down. The income request is shared with the income card; the average
 // is compared with the period just before, of the same length
 export function SummaryStrip({
@@ -84,6 +99,16 @@ export function SummaryStrip({
       <Tile label="Cobrado" value={money(data?.collected)} />
       <Tile label="Por cobrar" value={money(data?.pendingPayment)} muted={data?.pendingPayment === 0} />
       <Tile label="Por reembolsar" value={money(data?.pendingRefund)} muted={data?.pendingRefund === 0} />
+      {/* Spans the whole last row so the grid stays balanced */}
+      <Tile
+        className="col-span-full"
+        label="Comisión por pedidos"
+        value={data ? formatMoney(data.orderCount * FEE_PER_ORDER) : '…'}
+        muted={data?.orderCount === 0}
+        {...(data && {
+          note: `${data.orderCount} ${data.orderCount === 1 ? 'pedido' : 'pedidos'} × ${formatMoney(FEE_PER_ORDER)}`,
+        })}
+      />
     </div>
   )
 }
