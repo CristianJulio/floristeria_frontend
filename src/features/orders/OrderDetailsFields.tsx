@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { todayInColombia } from '@/lib/dates'
 import { OTHER_COUNTRY, PHONE_COUNTRIES } from '@/lib/phone'
 import { formatMoney } from './order-format'
 import {
@@ -146,14 +145,9 @@ function ContactInput({ fields, label }: { fields: ContactFields; label: string 
   )
 }
 
-type Props = {
-  // When editing, a delivery date already in the past stays selectable
-  minDeliveryDate?: string
-}
-
 // The order's own fields (recipient, delivery, contact, card), shared by the new-order and edit forms.
 // Must be rendered inside a react-hook-form FormProvider
-export function OrderDetailsFields({ minDeliveryDate }: Props) {
+export function OrderDetailsFields() {
   const {
     register,
     control,
@@ -235,7 +229,6 @@ export function OrderDetailsFields({ minDeliveryDate }: Props) {
             <Input
               id="deliveryDate"
               type="date"
-              min={minDeliveryDate ?? todayInColombia()}
               aria-invalid={!!errors.deliveryDate}
               {...register('deliveryDate')}
             />

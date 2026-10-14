@@ -123,13 +123,8 @@ function checkContact(values: DetailsValues, fields: ContactFields, ctx: z.Refin
   }
 }
 
-// Rules that involve more than one field. A date already in the past is only accepted if it
-// isn't being changed (e.g. editing the address of an overdue order that's still being prepared)
-function checkDetails(values: DetailsValues, ctx: z.RefinementCtx, unchangedDate?: string) {
-  if (values.deliveryDate < todayInColombia() && values.deliveryDate !== unchangedDate) {
-    ctx.addIssue({ code: 'custom', path: ['deliveryDate'], message: 'La fecha de entrega no puede estar en el pasado' })
-  }
-
+// Rules that involve more than one field. The delivery date may be in the past
+function checkDetails(values: DetailsValues, ctx: z.RefinementCtx) {
   checkContact(values, RESPONSIBLE_CONTACT_FIELDS, ctx, false)
   checkContact(values, RECIPIENT_CONTACT_FIELDS, ctx, true)
 
@@ -234,9 +229,7 @@ export const orderFormSchema = orderDetailsFields
 
 export type OrderFormValues = z.infer<typeof orderFormSchema>
 
-export function orderDetailsFormSchema(order: Order) {
-  return orderDetailsFields.superRefine((values, ctx) => checkDetails(values, ctx, order.deliveryDate))
-}
+export const orderDetailsFormSchema = orderDetailsFields.superRefine(checkDetails)
 
 export type OrderDetailsFormValues = DetailsValues
 

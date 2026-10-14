@@ -9,7 +9,6 @@ import { LoadingState } from '@/components/LoadingState'
 import { useAuth } from '@/features/auth/auth-context'
 import { ApiError } from '@/lib/api-client'
 import { apiErrorMessage } from '@/lib/api-errors'
-import { todayInColombia } from '@/lib/dates'
 import {
   orderDetailsFormSchema,
   orderToDetailsForm,
@@ -31,7 +30,7 @@ function EditOrderForm({ order }: { order: Order }) {
   const detailPath = `/pedidos/${order.id}`
 
   const form = useForm<OrderDetailsFormValues>({
-    resolver: zodResolver(orderDetailsFormSchema(order)),
+    resolver: zodResolver(orderDetailsFormSchema),
     defaultValues: orderToDetailsForm(order),
   })
   const {
@@ -68,10 +67,6 @@ function EditOrderForm({ order }: { order: Order }) {
     mutation.mutate(values)
   }
 
-  // A date already in the past stays selectable only while it isn't changed
-  const today = todayInColombia()
-  const minDeliveryDate = order.deliveryDate < today ? order.deliveryDate : today
-
   return (
     <FormProvider {...form}>
       {/* Same layout as the new order form: details on the left; on computers, a summary with the
@@ -82,7 +77,7 @@ function EditOrderForm({ order }: { order: Order }) {
         className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start"
       >
         <div className="flex flex-col gap-4">
-          <OrderDetailsFields minDeliveryDate={minDeliveryDate} />
+          <OrderDetailsFields />
         </div>
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-4">
