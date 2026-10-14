@@ -15,7 +15,6 @@ export type OrderItem = {
   imageUrl: string | null
   price: number
   quantity: number
-  deceasedName: string | null
   roomNumber: string | null
   withRibbon: boolean
   // What the ribbon says; null when it has no text
@@ -39,7 +38,6 @@ export type OrderExtraInput = { name: string; price: number; quantity: number }
 export type OrderItemInput = {
   productId: string
   quantity: number
-  deceasedName?: string
   roomNumber?: string
   withRibbon?: boolean
   ribbonText?: string

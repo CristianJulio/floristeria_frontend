@@ -133,13 +133,10 @@ function checkDetails(values: DetailsValues, ctx: z.RefinementCtx) {
   }
 }
 
-// A crown needs who it is for and the room
+// A crown needs the room
 function checkCrowns(items: OrderFormValues['items'], ctx: z.RefinementCtx) {
   items.forEach((item, index) => {
     if (item.category !== 'CORONAS') return
-    if (!item.deceasedName.trim()) {
-      ctx.addIssue({ code: 'custom', path: ['items', index, 'deceasedName'], message: 'Escribe el nombre del fallecido' })
-    }
     if (!item.roomNumber.trim()) {
       ctx.addIssue({ code: 'custom', path: ['items', index, 'roomNumber'], message: 'Escribe la sala' })
     }
@@ -152,7 +149,6 @@ export function toItemInput(item: OrderFormValues['items'][number]): OrderItemIn
   return {
     productId: item.productId,
     quantity: 1,
-    deceasedName: item.deceasedName.trim(),
     roomNumber: item.roomNumber.trim(),
     withRibbon: item.withRibbon,
     // The text only goes with a ribbon, and is left out when empty
@@ -195,7 +191,6 @@ export const orderFormSchema = orderDetailsFields
           price: z.number(),
           quantity: z.number().int().min(1, 'Mínimo 1').max(999, 'Máximo 999'),
           // Only for crowns; empty for any other product
-          deceasedName: z.string().trim().max(100, 'Máximo 100 caracteres'),
           roomNumber: z.string().trim().max(20, 'Máximo 20 caracteres'),
           withRibbon: z.boolean(),
           ribbonText: z.string().trim().max(100, 'Máximo 100 caracteres'),

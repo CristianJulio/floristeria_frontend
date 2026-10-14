@@ -58,7 +58,6 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
     key: item.id,
     productId: item.productId,
     category: item.category,
-    deceasedName: item.deceasedName ?? '',
     roomNumber: item.roomNumber ?? '',
     withRibbon: item.withRibbon,
     ribbonText: item.ribbonText ?? '',
@@ -89,7 +88,7 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
     extrasTotal(extras)
   const netPaid = order.balance.netPaid
   const crownsIncomplete = items.some(
-    (item) => item.category === 'CORONAS' && (!item.deceasedName.trim() || !item.roomNumber.trim()),
+    (item) => item.category === 'CORONAS' && !item.roomNumber.trim(),
   )
   const canSave = !loading && !loadFailed && items.length + extras.length > 0 && unavailableIds.size === 0 && !crownsIncomplete && extrasValid(extras)
 
@@ -167,7 +166,7 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
         )}
 
         {crownsIncomplete && (
-          <p className="text-sm text-muted-foreground">Escribe el nombre del fallecido y la sala de cada corona.</p>
+          <p className="text-sm text-muted-foreground">Escribe la sala de cada corona.</p>
         )}
 
         {submitError && (

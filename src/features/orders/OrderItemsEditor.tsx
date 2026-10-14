@@ -11,7 +11,7 @@ import { ProductCatalogDialog } from './ProductCatalogDialog'
 type Item = OrderFormValues['items'][number]
 
 // What the form reports for each line's crown fields, by position in the list
-type ItemErrors = ({ deceasedName?: { message?: string }; roomNumber?: { message?: string } } | undefined)[]
+type ItemErrors = ({ roomNumber?: { message?: string } } | undefined)[]
 
 // What the form reports for each extra's fields, by position in the list
 type ExtraErrors = ({ name?: { message?: string }; price?: { message?: string } } | undefined)[]
@@ -33,7 +33,7 @@ type Props = {
   deliveryFee?: number
 }
 
-// A crown's own details: who it is for, the room, and whether it carries a ribbon, a card or both
+// A crown's own details: the room, and whether it carries a ribbon, a card or both
 function CrownDetails({
   item,
   errors,
@@ -45,31 +45,17 @@ function CrownDetails({
 }) {
   return (
     <div className="flex flex-col gap-2 py-1">
-      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
-        <div className="flex flex-col gap-1">
-          <Input
-            aria-label="Nombre del fallecido"
-            placeholder="Nombre del fallecido"
-            maxLength={100}
-            className="h-8"
-            aria-invalid={!!errors?.deceasedName}
-            value={item.deceasedName}
-            onChange={(event) => onChange({ deceasedName: event.target.value })}
-          />
-          {errors?.deceasedName?.message && <p className="text-xs text-destructive">{errors.deceasedName.message}</p>}
-        </div>
-        <div className="flex flex-col gap-1">
-          <Input
-            aria-label="Sala"
-            placeholder="Sala"
-            maxLength={20}
-            className="h-8"
-            aria-invalid={!!errors?.roomNumber}
-            value={item.roomNumber}
-            onChange={(event) => onChange({ roomNumber: event.target.value })}
-          />
-          {errors?.roomNumber?.message && <p className="text-xs text-destructive">{errors.roomNumber.message}</p>}
-        </div>
+      <div className="flex flex-col gap-1">
+        <Input
+          aria-label="Sala"
+          placeholder="Sala"
+          maxLength={20}
+          className="h-8"
+          aria-invalid={!!errors?.roomNumber}
+          value={item.roomNumber}
+          onChange={(event) => onChange({ roomNumber: event.target.value })}
+        />
+        {errors?.roomNumber?.message && <p className="text-xs text-destructive">{errors.roomNumber.message}</p>}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Button
@@ -148,7 +134,6 @@ export function OrderItemsEditor({
           category: product.category,
           price: product.price,
           quantity: 1,
-          deceasedName: '',
           roomNumber: '',
           withRibbon: false,
           ribbonText: '',
