@@ -19,7 +19,17 @@ import { apiErrorMessage } from '@/lib/api-errors'
 import { PAYMENT_METHOD_LABELS, formatMoney } from './order-format'
 import { recordPayment, type Order, type PaymentMethod, type PaymentType, type RecordPaymentInput } from './orders-api'
 
-const METHODS: PaymentMethod[] = ['NEQUI', 'PAYPAL', 'CASH']
+const METHODS: PaymentMethod[] = ['NEQUI', 'DAVIPLATA', 'BANCOLOMBIA', 'BRE_B', 'WESTERN_UNION', 'PAYPAL', 'CASH']
+
+// What the optional account field asks for, depending on the method (cash has no account)
+const ACCOUNT_PLACEHOLDERS: Record<Exclude<PaymentMethod, 'CASH'>, string> = {
+  NEQUI: 'Número de Nequi',
+  DAVIPLATA: 'Número de Daviplata',
+  BANCOLOMBIA: 'Cuenta de Bancolombia',
+  BRE_B: 'Llave Bre-B',
+  WESTERN_UNION: 'Nombre de quien envía',
+  PAYPAL: 'Correo de PayPal',
+}
 
 const COPY: Record<PaymentType, { title: string; description: string; submit: string }> = {
   PAYMENT: { title: 'Registrar pago', description: 'Dinero recibido del cliente.', submit: 'Registrar pago' },
@@ -187,7 +197,7 @@ export function RecordPaymentDialog({ order, type, onClose }: Props) {
               <Label htmlFor="payment-account">Cuenta (opcional)</Label>
               <Input
                 id="payment-account"
-                placeholder={method === 'NEQUI' ? 'Número de Nequi' : 'Correo de PayPal'}
+                placeholder={ACCOUNT_PLACEHOLDERS[method]}
                 aria-invalid={!!errors.sourceAccount}
                 {...register('sourceAccount')}
               />

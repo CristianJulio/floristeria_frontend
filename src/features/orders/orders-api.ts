@@ -66,7 +66,7 @@ export type AuditUser = {
 }
 
 export type PaymentType = 'PAYMENT' | 'REFUND' | 'RETAINED'
-export type PaymentMethod = 'NEQUI' | 'PAYPAL' | 'CASH'
+export type PaymentMethod = 'NEQUI' | 'PAYPAL' | 'CASH' | 'BANCOLOMBIA' | 'WESTERN_UNION' | 'BRE_B' | 'DAVIPLATA'
 
 export type OrderPayment = {
   id: string

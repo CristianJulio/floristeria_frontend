@@ -10,6 +10,10 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   NEQUI: 'Nequi',
   PAYPAL: 'PayPal',
   CASH: 'Efectivo',
+  BANCOLOMBIA: 'Bancolombia',
+  WESTERN_UNION: 'Western Union',
+  BRE_B: 'Bre-B',
+  DAVIPLATA: 'Daviplata',
 }
 
 // "Pago · Nequi"; retained amounts move no money, so they usually have no method
