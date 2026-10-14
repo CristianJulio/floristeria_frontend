@@ -3,6 +3,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -173,12 +174,13 @@ export function RecordPaymentDialog({ order, type, onClose }: Props) {
           {needsMethod && (
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium">Método</span>
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Método">
-                {METHODS.map((option) => (
+              {/* Two columns of equal buttons; with an odd count the last one takes the whole row */}
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Método">
+                {METHODS.map((option, index) => (
                   <Button
                     key={option}
                     type="button"
-                    size="sm"
+                    className={cn('w-full', index === METHODS.length - 1 && METHODS.length % 2 === 1 && 'col-span-2')}
                     role="radio"
                     aria-checked={method === option}
                     variant={method === option ? 'default' : 'outline'}
