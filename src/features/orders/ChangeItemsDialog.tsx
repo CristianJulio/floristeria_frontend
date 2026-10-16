@@ -87,10 +87,7 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
   const newTotal = items.reduce((sum, item) => sum + item.price * item.quantity + surchargeOf(item), order.deliveryFee) +
     extrasTotal(extras)
   const netPaid = order.balance.netPaid
-  const crownsIncomplete = items.some(
-    (item) => item.category === 'CORONAS' && !item.roomNumber.trim(),
-  )
-  const canSave = !loading && !loadFailed && items.length + extras.length > 0 && unavailableIds.size === 0 && !crownsIncomplete && extrasValid(extras)
+  const canSave = !loading && !loadFailed && items.length + extras.length > 0 && unavailableIds.size === 0 && extrasValid(extras)
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -163,10 +160,6 @@ export function ChangeItemsDialog({ order, onClose }: Props) {
               )}
             </div>
           </div>
-        )}
-
-        {crownsIncomplete && (
-          <p className="text-sm text-muted-foreground">Escribe la sala de cada corona.</p>
         )}
 
         {submitError && (

@@ -48,7 +48,7 @@ function CrownDetails({
       <div className="flex flex-col gap-1">
         <Input
           aria-label="Sala"
-          placeholder="Sala"
+          placeholder="Sala (opcional)"
           maxLength={20}
           className="h-8"
           aria-invalid={!!errors?.roomNumber}
@@ -199,7 +199,7 @@ export function OrderItemsEditor({
       {/* A long list scrolls on its own, so the add button, total and buttons around it stay on screen
           (in the change-products dialog and in the new order's summary panel) */}
       {items.length > 0 && (
-        <ul className="-mr-2 max-h-[40svh] overflow-y-auto pr-2 text-sm">
+        <ul className="-mx-2 max-h-[40svh] overflow-y-auto px-2 text-sm">
           {items.map((item, index) => {
             const isCrown = item.category === 'CORONAS'
             return (

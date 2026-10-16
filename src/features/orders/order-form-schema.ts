@@ -133,23 +133,13 @@ function checkDetails(values: DetailsValues, ctx: z.RefinementCtx) {
   }
 }
 
-// A crown needs the room
-function checkCrowns(items: OrderFormValues['items'], ctx: z.RefinementCtx) {
-  items.forEach((item, index) => {
-    if (item.category !== 'CORONAS') return
-    if (!item.roomNumber.trim()) {
-      ctx.addIssue({ code: 'custom', path: ['items', index, 'roomNumber'], message: 'Escribe la sala' })
-    }
-  })
-}
-
 // What the API takes for a line: crown details only go with crowns
 export function toItemInput(item: OrderFormValues['items'][number]): OrderItemInput {
   if (item.category !== 'CORONAS') return { productId: item.productId, quantity: item.quantity }
   return {
     productId: item.productId,
     quantity: 1,
-    roomNumber: item.roomNumber.trim(),
+    ...(item.roomNumber.trim() && { roomNumber: item.roomNumber.trim() }),
     withRibbon: item.withRibbon,
     // The text only goes with a ribbon, and is left out when empty
     ...(item.withRibbon && item.ribbonText.trim() && { ribbonText: item.ribbonText.trim() }),
@@ -215,7 +205,6 @@ export const orderFormSchema = orderDetailsFields
   })
   .superRefine((values, ctx) => {
     checkDetails(values, ctx)
-    checkCrowns(values.items, ctx)
     // An order of only extras is fine; an empty one is not
     if (values.items.length + values.extras.length === 0) {
       ctx.addIssue({ code: 'custom', path: ['items'], message: 'Agrega al menos un producto o un adicional' })

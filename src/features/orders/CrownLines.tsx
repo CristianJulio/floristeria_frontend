@@ -8,7 +8,7 @@ export function CrownLines({ item }: { item: OrderItem }) {
   const extras = formatExtras(item)
   return (
     <span className="mt-0.5 block text-muted-foreground">
-      Sala {item.roomNumber}
+      {item.roomNumber && <span className="block">Sala {item.roomNumber}</span>}
       {extras && (
         <span className="block">
           {extras}
