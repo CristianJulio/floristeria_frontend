@@ -135,6 +135,11 @@ export async function fetchOrder(id: string) {
   return body.data
 }
 
+// Soft delete: the order stays in the database but disappears from the lists and the dashboard
+export async function deleteOrder(id: string) {
+  await apiFetch<void>(`/api/orders/${id}`, { method: 'DELETE' })
+}
+
 // A reason is required exactly when the new status is CANCELLED
 export async function changeOrderStatus(id: string, status: OrderStatus, cancellationReason?: string) {
   const body = await apiFetch<{ data: Order }>(`/api/orders/${id}/status`, {

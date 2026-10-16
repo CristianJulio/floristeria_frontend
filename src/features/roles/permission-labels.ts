@@ -14,6 +14,7 @@ export const PERMISSION_GROUPS: { title: string; permissions: { name: string; la
       { name: 'orders.record_payment', label: 'Registrar pagos' },
       { name: 'orders.record_refund', label: 'Registrar reembolsos y montos retenidos' },
       { name: 'orders.void_payment', label: 'Anular pagos' },
+      { name: 'orders.delete', label: 'Eliminar pedidos' },
     ],
   },
   {
