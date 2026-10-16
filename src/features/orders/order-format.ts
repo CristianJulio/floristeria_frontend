@@ -84,8 +84,34 @@ export function formatDeliveryDay(date: string) {
   }).format(new Date(Date.UTC(year, month - 1, day)))
 }
 
+// "14:30" -> "2:30 PM"
+export function formatClock(time: string) {
+  const [h, m] = time.split(':').map(Number)
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
+}
+
+// Customers often ask for "in the morning" or "in the afternoon" with no exact time; those are fixed ranges
+export const DAY_PARTS = [
+  { label: 'En la mañana', from: '06:00', to: '12:00' },
+  { label: 'En la tarde', from: '12:00', to: '18:00' },
+] as const
+
+// Common two-hour ranges, one tap each when the exact range is not worth picking by hand
+export const TIME_SLOTS = [
+  { label: '8–10 AM', from: '08:00', to: '10:00' },
+  { label: '10 AM–12 PM', from: '10:00', to: '12:00' },
+  { label: '12–2 PM', from: '12:00', to: '14:00' },
+  { label: '2–4 PM', from: '14:00', to: '16:00' },
+  { label: '4–6 PM', from: '16:00', to: '18:00' },
+] as const
+
+export const dayPartOf = (from: string | null | undefined, to: string | null | undefined) =>
+  DAY_PARTS.find((part) => part.from === from && part.to === to)
 export function formatDeliveryTime(order: Pick<Order, 'deliveryTimeFrom' | 'deliveryTimeTo'>) {
-  const { deliveryTimeFrom: from, deliveryTimeTo: to } = order
+  const part = dayPartOf(order.deliveryTimeFrom, order.deliveryTimeTo)
+  if (part) return part.label
+  const from = order.deliveryTimeFrom && formatClock(order.deliveryTimeFrom)
+  const to = order.deliveryTimeTo && formatClock(order.deliveryTimeTo)
   if (from && to) return from === to ? from : `${from}–${to}`
   if (from) return `Desde ${from}`
   if (to) return `Antes de ${to}`
