@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from 'cn'
 import { formatMoney } from '@/lib/money'
@@ -79,7 +79,19 @@ export function SummaryStrip({
     refetchInterval: 60_000,
   })
 
-  const [collectedOpen, setCollectedOpen] = useState(false)
+  // Open or not is in the address too, so coming back from an order finds the list still open
+  const [params, setParams] = useSearchParams()
+  const collectedOpen = params.get('cobrado') === '1'
+  const setCollectedOpen = (open: boolean) =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        if (open) next.set('cobrado', '1')
+        else next.delete('cobrado')
+        return next
+      },
+      { replace: true },
+    )
 
   if (current.isError) return <p className="text-sm text-destructive">No se pudo cargar el resumen.</p>
 

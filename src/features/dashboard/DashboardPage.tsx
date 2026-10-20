@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,9 @@ const PERIODS = [
 ] as const
 
 type Period = (typeof PERIODS)[number]['value']
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/
+const isPeriod = (value: string | null): value is Period => PERIODS.some((option) => option.value === value)
 
 const monthName = new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
@@ -51,12 +54,34 @@ function shiftDay(period: Exclude<Period, 'rango'>, day: string, direction: 1 | 
 }
 
 // What the orders are worth, by the day they are delivered, for a day, a week, a month or a range
-// of dates chosen here. The arrows move to the previous or next one; "Hoy" comes back to the current
+// of dates chosen here. The arrows move to the previous or next one; "Hoy" comes back to the current.
+// The choice lives in the address (?periodo=…&dia=…), so coming back from an order finds the same view
 export function DashboardPage() {
   const today = todayInColombia()
-  const [period, setPeriod] = useState<Period>('dia')
-  const [day, setDay] = useState(today)
-  const [range, setRange] = useState({ from: monthRange(today).from, to: today })
+  const [params, setParams] = useSearchParams()
+  const update = (changes: Record<string, string>) =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        for (const [key, value] of Object.entries(changes)) next.set(key, value)
+        return next
+      },
+      { replace: true },
+    )
+
+  const periodParam = params.get('periodo')
+  const period: Period = isPeriod(periodParam) ? periodParam : 'dia'
+  const dayParam = params.get('dia')
+  const day = dayParam && DATE.test(dayParam) ? dayParam : today
+  const fromParam = params.get('desde')
+  const toParam = params.get('hasta')
+  const range =
+    fromParam && toParam && DATE.test(fromParam) && DATE.test(toParam) && fromParam <= toParam
+      ? { from: fromParam, to: toParam }
+      : { from: monthRange(today).from, to: today }
+  const setPeriod = (value: Period) => update({ periodo: value })
+  const setDay = (value: string) => update({ dia: value })
+  const setRange = (value: { from: string; to: string }) => update({ desde: value.from, hasta: value.to })
 
   const shown = period === 'rango' ? null : periodDays(period, day, today)
   const from = shown?.from ?? range.from
