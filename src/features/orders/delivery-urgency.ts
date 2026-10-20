@@ -2,8 +2,8 @@ import type { Order } from './orders-api'
 
 // How close a delivery is, as a traffic light. With a single time (or none): green when there is
 // time, yellow when 1.5 hours or less are left, red (alert) when an hour or less is left or the time
-// has passed. With a window (from and to): green until it starts, yellow while it is open, red when
-// an hour or less is left to its end
+// has passed. With a window (from and to): yellow once it starts or 1.5 hours or less are left to its
+// end, whichever comes first, and red when an hour or less is left to its end
 export type Urgency = 'ok' | 'soon' | 'alert'
 
 export const SOON_MINUTES = 90
@@ -45,7 +45,9 @@ export function urgencyOf(
   now: Date,
 ): Urgency {
   if (order.deliveryTimeFrom && order.deliveryTimeTo) {
-    if (minutesUntil(order.deliveryDate, order.deliveryTimeTo, now) <= ALERT_MINUTES) return 'alert'
+    const untilEnd = minutesUntil(order.deliveryDate, order.deliveryTimeTo, now)
+    if (untilEnd <= ALERT_MINUTES) return 'alert'
+    if (untilEnd <= SOON_MINUTES) return 'soon'
     return minutesUntil(order.deliveryDate, order.deliveryTimeFrom, now) <= 0 ? 'soon' : 'ok'
   }
   const minutes = minutesToDelivery(order, now)
