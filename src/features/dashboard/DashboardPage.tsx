@@ -63,9 +63,11 @@ export function DashboardPage() {
   const shown = period === 'rango' ? null : periodDays(period, day, today)
   const from = shown?.from ?? range.from
   const to = shown?.to ?? range.to
-  // The period just before, as long as this one: what the average order is compared with
+  // The period just before: what the average order is compared with. A month is compared with the
+  // whole month before it, whatever its length; the others with as many days as they have
   const length = Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1
-  const previous = { from: addDays(from, -length), to: addDays(from, -1) }
+  const previous =
+    period === 'mes' ? monthRange(addDays(from, -1)) : { from: addDays(from, -length), to: addDays(from, -1) }
   // The sales chart needs more than one day to show anything: for a day, the week it belongs to
   const chart = from === to ? weekRange(from) : { from, to }
   const label = shown?.label ?? `${formatDeliveryDay(range.from)} – ${formatDeliveryDay(range.to)}`
