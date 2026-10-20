@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatMoney } from '@/lib/money'
 import { STATUS_LABELS, formatDeliveryDay } from '@/features/orders/order-format'
@@ -18,6 +18,7 @@ export function CollectedOrdersDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const location = useLocation()
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['dashboard', 'collected-orders', from, to],
     queryFn: () => fetchCollectedOrders(from, to),
@@ -53,6 +54,8 @@ export function CollectedOrdersDialog({
                 <li key={order.id} className="border-b last:border-b-0">
                   <Link
                     to={`/pedidos/${order.id}`}
+                    // So "Volver" on the order comes back to this list, still open
+                    state={{ from: `${location.pathname}${location.search}` }}
                     className="flex items-center justify-between gap-3 py-2 transition-colors hover:bg-secondary/40 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                   >
                     <span className="min-w-0">

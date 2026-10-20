@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { formatMoney } from '@/lib/money'
 import { STATUS_LABELS, formatDeliveryDay, formatDeliveryTime } from '@/features/orders/order-format'
 import { DashboardCard } from './DashboardCard'
@@ -10,6 +10,7 @@ const orders = (count: number) => `${count} ${count === 1 ? 'pedido' : 'pedidos'
 // The orders, of any delivery date, with money still to move, soonest delivery first: what customers still
 // owe (so nothing goes out unpaid) and what the shop still has to give back
 export function PendingPaymentsCard({ className }: { className?: string }) {
+  const location = useLocation()
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['dashboard', 'pending-payments'],
     queryFn: fetchPendingPayments,
@@ -52,6 +53,7 @@ export function PendingPaymentsCard({ className }: { className?: string }) {
                   <li key={order.id} className="border-b last:border-b-0">
                     <Link
                       to={`/pedidos/${order.id}`}
+                      state={{ from: `${location.pathname}${location.search}` }}
                       className="flex items-center justify-between gap-3 py-2 transition-colors hover:bg-secondary/40 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                     >
                       <span className="min-w-0">
