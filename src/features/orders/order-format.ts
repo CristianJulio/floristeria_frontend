@@ -90,10 +90,11 @@ export function formatClock(time: string) {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
 }
 
-// Customers often ask for "in the morning" or "in the afternoon" with no exact time; those are fixed ranges
+// Customers often ask for "in the morning" or "in the afternoon" with no exact time; those are fixed ranges.
+// `due` is the time the delivery is really expected by, which the traffic light follows
 export const DAY_PARTS = [
-  { label: 'En la mañana', from: '06:00', to: '12:00' },
-  { label: 'En la tarde', from: '12:00', to: '18:00' },
+  { label: 'En la mañana', from: '06:00', to: '12:00', due: '10:00' },
+  { label: 'En la tarde', from: '12:00', to: '18:00', due: '15:00' },
 ] as const
 
 // Common two-hour ranges, one tap each when the exact range is not worth picking by hand

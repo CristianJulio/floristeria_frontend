@@ -1,8 +1,10 @@
+import { dayPartOf } from './order-format'
 import type { Order } from './orders-api'
 
 // How close a delivery is, as a traffic light. With a single time (or none): green when there is
 // time, yellow when 1.5 hours or less are left, red (alert) when an hour or less is left or the time
-// has passed. With a window (from and to): yellow once it starts or 1.5 hours or less are left to its
+// has passed. A part of the day ("en la mañana") counts as a single time, the one it is expected by.
+// With a window (from and to): yellow once it starts or 1.5 hours or less are left to its
 // end, whichever comes first, and red when an hour or less is left to its end
 export type Urgency = 'ok' | 'soon' | 'alert'
 
@@ -12,9 +14,12 @@ export const ALERT_MINUTES = 60
 // An order with no time is due when the working day ends
 export const END_OF_DAY = '18:00'
 
-// The time the order is due: the start of its delivery window, or its end if that's all there is,
-// or the end of the day if it has no time
+// The time the order is due: the time expected for a part of the day, the end of a window, the one
+// time there is, or the end of the day if it has no time
 function dueTime(order: Pick<Order, 'deliveryTimeFrom' | 'deliveryTimeTo'>) {
+  const part = dayPartOf(order.deliveryTimeFrom, order.deliveryTimeTo)
+  if (part) return part.due
+  if (order.deliveryTimeFrom && order.deliveryTimeTo) return order.deliveryTimeTo
   return order.deliveryTimeFrom ?? order.deliveryTimeTo ?? END_OF_DAY
 }
 
@@ -32,15 +37,14 @@ export function minutesToDelivery(
   order: Pick<Order, 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'>,
   now: Date,
 ) {
-  const time = order.deliveryTimeFrom && order.deliveryTimeTo ? order.deliveryTimeTo : dueTime(order)
-  return minutesUntil(order.deliveryDate, time, now)
+  return minutesUntil(order.deliveryDate, dueTime(order), now)
 }
 
 export function urgencyOf(
   order: Pick<Order, 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'>,
   now: Date,
 ): Urgency {
-  if (order.deliveryTimeFrom && order.deliveryTimeTo) {
+  if (order.deliveryTimeFrom && order.deliveryTimeTo && !dayPartOf(order.deliveryTimeFrom, order.deliveryTimeTo)) {
     const untilEnd = minutesUntil(order.deliveryDate, order.deliveryTimeTo, now)
     if (untilEnd <= ALERT_MINUTES) return 'alert'
     if (untilEnd <= SOON_MINUTES) return 'soon'
