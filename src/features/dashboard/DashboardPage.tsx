@@ -8,7 +8,6 @@ import { addDays, monthRange, todayInColombia, weekRange } from '@/lib/dates'
 import { formatDeliveryDay } from '@/features/orders/order-format'
 import { CancellationsCard } from './CancellationsCard'
 import { CollectedByMethodCard } from './CollectedByMethodCard'
-import { CrownsCard } from './CrownsCard'
 import { ExtrasCard } from './ExtrasCard'
 import { IncomeCard } from './IncomeCard'
 import { OrdersByStatusCard } from './OrdersByStatusCard'
@@ -163,7 +162,6 @@ export function DashboardPage() {
         <CollectedByMethodCard from={from} to={to} />
         <SalesByCategoryCard from={from} to={to} />
         <CancellationsCard from={from} to={to} />
-        <CrownsCard from={from} to={to} />
         <ExtrasCard from={from} to={to} />
         <TopProductsCard kind="best" from={from} to={to} />
         <TopProductsCard kind="worst" from={from} to={to} />

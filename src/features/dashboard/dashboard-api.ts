@@ -65,16 +65,6 @@ export type SalesByCategory = {
   total: number
 }
 
-export type Crowns = {
-  crowns: number
-  revenue: number
-  ribbonAndCard: number
-  ribbonOnly: number
-  cardOnly: number
-  neither: number
-  surcharge: number
-}
-
 export type Extras = {
   lines: number
   units: number
@@ -103,7 +93,6 @@ export const fetchCollectedByMethod = (from: string, to: string) => get<Collecte
 export const fetchTopProducts = (from: string, to: string) => get<TopProducts>('top-products', from, to)
 export const fetchSalesByDay = (from: string, to: string) => get<SalesByDay>('sales-by-day', from, to)
 export const fetchSalesByCategory = (from: string, to: string) => get<SalesByCategory>('sales-by-category', from, to)
-export const fetchCrowns = (from: string, to: string) => get<Crowns>('crowns', from, to)
 export const fetchExtras = (from: string, to: string) => get<Extras>('extras', from, to)
 export const fetchCancellations = (from: string, to: string) => get<Cancellations>('cancellations', from, to)
 export const fetchOrdersByStatus = (from: string, to: string) => get<OrdersByStatus>('orders-by-status', from, to)
