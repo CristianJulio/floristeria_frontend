@@ -91,11 +91,9 @@ export function SummaryStrip({
           orders > 0 && { note: `${Math.round((data.cancelledCount / orders) * 100)} % de ${orders} pedidos` })}
       />
       <Tile label="Cobrado" value={money(data?.collected)} />
-      <Tile label="Por cobrar" value={money(data?.pendingPayment)} muted={data?.pendingPayment === 0} />
-      <Tile label="Por reembolsar" value={money(data?.pendingRefund)} muted={data?.pendingRefund === 0} />
-      {/* Spans the whole last row so the grid stays balanced */}
+      {/* Fills the rest of the grid so it stays balanced */}
       <Tile
-        className="col-span-full"
+        className="col-span-full sm:col-span-2"
         label="Comisión por pedidos"
         value={data ? formatMoney(data.fee) : '…'}
         muted={data?.orderCount === 0}

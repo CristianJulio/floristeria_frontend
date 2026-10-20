@@ -22,6 +22,7 @@ const SECTIONS = [
   // The orders list lives at '/', but its pages (new, detail, edit) are under /pedidos
   { to: '/', label: 'Pedidos', permission: 'orders.read', end: true, alsoActiveUnder: '/pedidos' },
   { to: '/resumen', label: 'Resumen', permission: 'orders.read', end: false },
+  { to: '/pagos', label: 'Pagos', permission: 'orders.read', end: false },
   { to: '/productos', label: 'Productos', permission: 'products.read', end: false },
   { to: '/usuarios', label: 'Usuarios', permission: 'users.read', end: false },
   { to: '/roles', label: 'Roles', permission: 'roles.read', end: false },

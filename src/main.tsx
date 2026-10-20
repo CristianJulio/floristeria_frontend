@@ -11,6 +11,7 @@ import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
+import { PendingPaymentsPage } from '@/features/dashboard/PendingPaymentsPage'
 import { EditOrderPage } from '@/features/orders/EditOrderPage'
 import { NewOrderPage } from '@/features/orders/NewOrderPage'
 import { OrderDetailPage } from '@/features/orders/OrderDetailPage'
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
           { path: 'pedidos/:id', element: <OrderDetailPage /> },
           { path: 'pedidos/:id/editar', element: <EditOrderPage /> },
           { path: 'resumen', element: <DashboardPage /> },
+          { path: 'pagos', element: <PendingPaymentsPage /> },
           { path: 'productos', element: <ProductsPage /> },
           { path: 'usuarios', element: <UsersPage /> },
           { path: 'roles', element: <RolesPage /> },

@@ -12,7 +12,6 @@ import { CrownsCard } from './CrownsCard'
 import { ExtrasCard } from './ExtrasCard'
 import { IncomeCard } from './IncomeCard'
 import { OrdersByStatusCard } from './OrdersByStatusCard'
-import { PendingPaymentsCard } from './PendingPaymentsCard'
 import { SalesByCategoryCard } from './SalesByCategoryCard'
 import { SalesByDayCard } from './SalesByDayCard'
 import { SummaryStrip } from './SummaryStrip'
@@ -162,7 +161,6 @@ export function DashboardPage() {
         <IncomeCard from={from} to={to} />
         <OrdersByStatusCard from={from} to={to} />
         <CollectedByMethodCard from={from} to={to} />
-        <PendingPaymentsCard from={from} to={to} />
         <SalesByCategoryCard from={from} to={to} />
         <CancellationsCard from={from} to={to} />
         <CrownsCard from={from} to={to} />

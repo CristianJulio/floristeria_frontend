@@ -14,13 +14,11 @@ export type Income = {
   retainedFromCancelled: number
   total: number
   collected: number
-  pendingPayment: number
-  pendingRefund: number
   feePerOrder: number
   fee: number
 }
 
-// Orders of the range with money still to move: the customer owes the shop (kind PAYMENT) or the shop
+// Orders, of any delivery date, with money still to move: the customer owes the shop (kind PAYMENT) or the shop
 // owes the customer back (kind REFUND). `orders` is the first 50; the counts and sums cover all of them
 export type PendingPayments = {
   debtCount: number
@@ -100,7 +98,7 @@ const get = async <T>(path: string, from: string, to: string) =>
   (await apiFetch<{ data: T }>(`/api/dashboard/${path}`, { query: { from, to } })).data
 
 export const fetchIncome = (from: string, to: string) => get<Income>('income', from, to)
-export const fetchPendingPayments = (from: string, to: string) => get<PendingPayments>('pending-payments', from, to)
+export const fetchPendingPayments = async () => (await apiFetch<{ data: PendingPayments }>('/api/dashboard/pending-payments')).data
 export const fetchCollectedByMethod = (from: string, to: string) => get<CollectedByMethod>('collected-by-method', from, to)
 export const fetchTopProducts = (from: string, to: string) => get<TopProducts>('top-products', from, to)
 export const fetchSalesByDay = (from: string, to: string) => get<SalesByDay>('sales-by-day', from, to)

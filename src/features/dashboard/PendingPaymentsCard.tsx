@@ -7,19 +7,19 @@ import { fetchPendingPayments } from './dashboard-api'
 
 const orders = (count: number) => `${count} ${count === 1 ? 'pedido' : 'pedidos'}`
 
-// The orders of the period with money still to move, soonest delivery first: what customers still
+// The orders, of any delivery date, with money still to move, soonest delivery first: what customers still
 // owe (so nothing goes out unpaid) and what the shop still has to give back
-export function PendingPaymentsCard({ from, to, className }: { from: string; to: string; className?: string }) {
+export function PendingPaymentsCard({ className }: { className?: string }) {
   const { data, isPending, isError, refetch } = useQuery({
-    queryKey: ['dashboard', 'pending-payments', from, to],
-    queryFn: () => fetchPendingPayments(from, to),
+    queryKey: ['dashboard', 'pending-payments'],
+    queryFn: fetchPendingPayments,
     refetchInterval: 60_000,
   })
 
   return (
     <DashboardCard
       title="Pagos pendientes"
-      subtitle="Pedidos del período con saldo por cobrar o por reembolsar"
+      subtitle="Pedidos con saldo por cobrar o por reembolsar, de cualquier fecha de entrega"
       isPending={isPending}
       isError={isError}
       onRetry={refetch}
@@ -27,7 +27,7 @@ export function PendingPaymentsCard({ from, to, className }: { from: string; to:
     >
       {data &&
         (data.orders.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No hay pagos ni reembolsos pendientes en este período.</p>
+          <p className="text-sm text-muted-foreground">No hay pagos ni reembolsos pendientes.</p>
         ) : (
           <>
             <p className="text-sm text-muted-foreground">
