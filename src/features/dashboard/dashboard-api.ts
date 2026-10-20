@@ -16,6 +16,8 @@ export type Income = {
   collected: number
   pendingPayment: number
   pendingRefund: number
+  feePerOrder: number
+  fee: number
 }
 
 // Orders of the range with money still to move: the customer owes the shop (kind PAYMENT) or the shop

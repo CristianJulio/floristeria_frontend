@@ -3,9 +3,6 @@ import { cn } from 'cn'
 import { formatMoney } from '@/lib/money'
 import { fetchIncome, type Income } from './dashboard-api'
 
-// What the shop charges for each order it handles, in pesos
-const FEE_PER_ORDER = 1000
-
 function Tile({
   label,
   value,
@@ -70,6 +67,7 @@ export function SummaryStrip({
   const data = current.data
   const money = (amount: number | undefined) => (data && amount !== undefined ? formatMoney(amount) : '…')
   const ticket = ticketOf(data)
+  const trend = data && !before.isPending ? ticketNote(ticket, ticketOf(before.data)) : undefined
   const orders = data ? data.orderCount + data.cancelledCount : 0
 
   return (
@@ -83,11 +81,7 @@ export function SummaryStrip({
         label="Ticket promedio"
         value={data ? (ticket === null ? '–' : formatMoney(ticket)) : '…'}
         muted={ticket === null}
-        {...(data &&
-          !before.isPending &&
-          ticketNote(ticket, ticketOf(before.data)) && {
-            note: ticketNote(ticket, ticketOf(before.data))!,
-          })}
+        {...(trend && { note: trend })}
       />
       <Tile
         label="Cancelados"
@@ -103,10 +97,10 @@ export function SummaryStrip({
       <Tile
         className="col-span-full"
         label="Comisión por pedidos"
-        value={data ? formatMoney(data.orderCount * FEE_PER_ORDER) : '…'}
+        value={data ? formatMoney(data.fee) : '…'}
         muted={data?.orderCount === 0}
         {...(data && {
-          note: `${data.orderCount} ${data.orderCount === 1 ? 'pedido' : 'pedidos'} × ${formatMoney(FEE_PER_ORDER)}`,
+          note: `${data.orderCount} ${data.orderCount === 1 ? 'pedido' : 'pedidos'} × ${formatMoney(data.feePerOrder)}`,
         })}
       />
     </div>
