@@ -49,7 +49,7 @@ function OrderItem({
   onSelect?: (() => void) | undefined
 }) {
   const minutes = minutesToDelivery(order, now)
-  const urgency = urgencyOf(minutes)
+  const urgency = urgencyOf(order, now)
   const countdown = formatCountdown(minutes)
   const day = dayLabel(order.deliveryDate, today)
 

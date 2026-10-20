@@ -1,7 +1,9 @@
 import type { Order } from './orders-api'
 
-// How close a delivery is, as a traffic light: green when there is time, yellow when 1.5 hours or
-// less are left, red (alert) when an hour or less is left or the time has passed
+// How close a delivery is, as a traffic light. With a single time (or none): green when there is
+// time, yellow when 1.5 hours or less are left, red (alert) when an hour or less is left or the time
+// has passed. With a window (from and to): green until it starts, yellow while it is open, red when
+// an hour or less is left to its end
 export type Urgency = 'ok' | 'soon' | 'alert'
 
 export const SOON_MINUTES = 90
@@ -16,20 +18,32 @@ function dueTime(order: Pick<Order, 'deliveryTimeFrom' | 'deliveryTimeTo'>) {
   return order.deliveryTimeFrom ?? order.deliveryTimeTo ?? END_OF_DAY
 }
 
-// Minutes until the delivery (negative once it has passed).
+// Minutes until a time of the day (negative once it has passed).
 // Colombia has no daylight saving, so its clock is always UTC-5
-export function minutesToDelivery(
-  order: Pick<Order, 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'>,
-  now: Date,
-) {
-  const time = dueTime(order)
-  const [year, month, day] = order.deliveryDate.split('-').map(Number)
+function minutesUntil(date: string, time: string, now: Date) {
+  const [year, month, day] = date.split('-').map(Number)
   const [hours, minutes] = time.split(':').map(Number)
   const due = Date.UTC(year, month - 1, day, hours + 5, minutes)
   return Math.round((due - now.getTime()) / 60000)
 }
 
-export function urgencyOf(minutes: number): Urgency {
+// Minutes until the delivery is due (negative once it has passed)
+export function minutesToDelivery(
+  order: Pick<Order, 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'>,
+  now: Date,
+) {
+  return minutesUntil(order.deliveryDate, dueTime(order), now)
+}
+
+export function urgencyOf(
+  order: Pick<Order, 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'>,
+  now: Date,
+): Urgency {
+  if (order.deliveryTimeFrom && order.deliveryTimeTo) {
+    if (minutesUntil(order.deliveryDate, order.deliveryTimeTo, now) <= ALERT_MINUTES) return 'alert'
+    return minutesUntil(order.deliveryDate, order.deliveryTimeFrom, now) <= 0 ? 'soon' : 'ok'
+  }
+  const minutes = minutesToDelivery(order, now)
   if (minutes <= ALERT_MINUTES) return 'alert'
   if (minutes <= SOON_MINUTES) return 'soon'
   return 'ok'
