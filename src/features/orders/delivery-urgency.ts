@@ -27,12 +27,17 @@ function minutesUntil(date: string, time: string, now: Date) {
   return Math.round((due - now.getTime()) / 60000)
 }
 
-// Minutes until the delivery is due (negative once it has passed)
+// Minutes until the delivery is due (negative once it has passed). With a window, once it has
+// started, until its end
 export function minutesToDelivery(
   order: Pick<Order, 'deliveryDate' | 'deliveryTimeFrom' | 'deliveryTimeTo'>,
   now: Date,
 ) {
-  return minutesUntil(order.deliveryDate, dueTime(order), now)
+  const untilStart = minutesUntil(order.deliveryDate, dueTime(order), now)
+  if (order.deliveryTimeFrom && order.deliveryTimeTo && untilStart <= 0) {
+    return minutesUntil(order.deliveryDate, order.deliveryTimeTo, now)
+  }
+  return untilStart
 }
 
 export function urgencyOf(
