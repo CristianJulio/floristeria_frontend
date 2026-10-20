@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from 'cn'
 import { formatMoney } from '@/lib/money'
+import { CollectedOrdersDialog } from './CollectedOrdersDialog'
 import { fetchIncome, type Income } from './dashboard-api'
 
 function Tile({
@@ -9,19 +11,34 @@ function Tile({
   note,
   muted,
   className,
+  onClick,
 }: {
   label: string
   value: string
   note?: string
   muted?: boolean
   className?: string
+  onClick?: () => void
 }) {
-  return (
-    <div className={cn('flex flex-col gap-0.5 rounded-xl border bg-card px-4 py-3', className)}>
+  const classes = cn('flex flex-col gap-0.5 rounded-xl border bg-card px-4 py-3', className)
+  const content = (
+    <>
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className={cn('text-2xl font-semibold tabular-nums', muted && 'text-muted-foreground')}>{value}</span>
       <span className="min-h-4 text-xs text-muted-foreground">{note}</span>
-    </div>
+    </>
+  )
+  // With onClick the tile is a button that opens the detail behind its figure
+  return onClick ? (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(classes, 'cursor-pointer text-left transition-colors hover:bg-secondary/40 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none')}
+    >
+      {content}
+    </button>
+  ) : (
+    <div className={classes}>{content}</div>
   )
 }
 
@@ -62,6 +79,8 @@ export function SummaryStrip({
     refetchInterval: 60_000,
   })
 
+  const [collectedOpen, setCollectedOpen] = useState(false)
+
   if (current.isError) return <p className="text-sm text-destructive">No se pudo cargar el resumen.</p>
 
   const data = current.data
@@ -90,7 +109,13 @@ export function SummaryStrip({
         {...(data &&
           orders > 0 && { note: `${Math.round((data.cancelledCount / orders) * 100)} % de ${orders} pedidos` })}
       />
-      <Tile label="Cobrado" value={money(data?.collected)} />
+      <Tile
+        label="Cobrado"
+        value={money(data?.collected)}
+        note="Ver pedidos"
+        onClick={() => setCollectedOpen(true)}
+      />
+      <CollectedOrdersDialog from={from} to={to} open={collectedOpen} onOpenChange={setCollectedOpen} />
       {/* Fills the rest of the grid so it stays balanced */}
       <Tile
         className="col-span-full sm:col-span-2"

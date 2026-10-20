@@ -48,6 +48,21 @@ export type CollectedByMethod = {
   net: number
 }
 
+// The orders that make up what was collected in the range, by the day each payment was recorded,
+// whatever their delivery date. `orders` is the first 200, most collected first; the count covers all
+export type CollectedOrders = {
+  orderCount: number
+  orders: {
+    id: string
+    status: OrderStatus
+    recipientName: string
+    deliveryDate: string
+    paid: number
+    refunded: number
+    net: number
+  }[]
+}
+
 // Catalog products ranked by units sold in the range: the ten best, and the ten worst among the
 // products on sale today (which includes the ones that sold nothing)
 export type TopProduct = { id: string; name: string; category: string; units: number; revenue: number }
@@ -91,6 +106,7 @@ const get = async <T>(path: string, from: string, to: string) =>
 export const fetchIncome = (from: string, to: string) => get<Income>('income', from, to)
 export const fetchPendingPayments = async () => (await apiFetch<{ data: PendingPayments }>('/api/dashboard/pending-payments')).data
 export const fetchCollectedByMethod = (from: string, to: string) => get<CollectedByMethod>('collected-by-method', from, to)
+export const fetchCollectedOrders = (from: string, to: string) => get<CollectedOrders>('collected-orders', from, to)
 export const fetchTopProducts = (from: string, to: string) => get<TopProducts>('top-products', from, to)
 export const fetchSalesByDay = (from: string, to: string) => get<SalesByDay>('sales-by-day', from, to)
 export const fetchSalesByCategory = (from: string, to: string) => get<SalesByCategory>('sales-by-category', from, to)
