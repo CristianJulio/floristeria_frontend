@@ -38,8 +38,8 @@ function ticketNote(current: number | null, previous: number | null) {
   return `${change > 0 ? '▲' : '▼'} ${Math.abs(change)} % frente al período anterior`
 }
 
-// The figures looked at most, in three rows: two of three tiles and a last one across the width. What the orders are worth and how many, their
-// average, how many were cancelled, and what has been collected, is still to collect or to give back, and the fee owed for the orders.
+// The figures looked at most: what the orders are worth and how many, their average, how many were
+// cancelled, what was collected in the period (by the day of each payment), and the fee owed for the orders.
 // The cards below only break them down. The income request is shared with the income card; the average
 // is compared with the period just before, of the same length
 export function SummaryStrip({

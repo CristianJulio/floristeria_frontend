@@ -3,7 +3,8 @@ import type { OrderStatus, PaymentMethod } from '@/features/orders/orders-api'
 
 // What the orders delivered in a range are worth. Items are products and extras; delivery is the
 // delivery fees; retainedFromCancelled is what was kept from cancelled orders, which are worth only
-// that. Collected is what has been paid (minus refunds) on those same orders
+// that. Collected is not about those orders: it is what was paid (minus refunds) in the range, by the
+// day each payment was recorded
 export type Income = {
   from: string
   to: string
