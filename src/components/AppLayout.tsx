@@ -23,6 +23,7 @@ const SECTIONS = [
   { to: '/', label: 'Pedidos', permission: 'orders.read', end: true, alsoActiveUnder: '/pedidos' },
   { to: '/resumen', label: 'Resumen', permission: 'orders.read', end: false },
   { to: '/pagos', label: 'Pagos', permission: 'orders.read', end: false },
+  { to: '/buscar', label: 'Buscar pedido', permission: 'orders.search_by_id', end: false },
   { to: '/productos', label: 'Productos', permission: 'products.read', end: false },
   { to: '/usuarios', label: 'Usuarios', permission: 'users.read', end: false },
   { to: '/roles', label: 'Roles', permission: 'roles.read', end: false },

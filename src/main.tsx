@@ -15,6 +15,7 @@ import { PendingPaymentsPage } from '@/features/dashboard/PendingPaymentsPage'
 import { EditOrderPage } from '@/features/orders/EditOrderPage'
 import { NewOrderPage } from '@/features/orders/NewOrderPage'
 import { OrderDetailPage } from '@/features/orders/OrderDetailPage'
+import { OrderSearchPage } from '@/features/orders/OrderSearchPage'
 import { OrdersListPage } from '@/features/orders/OrdersListPage'
 import { ProductsPage } from '@/features/products/ProductsPage'
 import { RolePage } from '@/features/roles/RolePage'
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
           { path: 'pedidos/:id/editar', element: <EditOrderPage /> },
           { path: 'resumen', element: <DashboardPage /> },
           { path: 'pagos', element: <PendingPaymentsPage /> },
+          { path: 'buscar', element: <OrderSearchPage /> },
           { path: 'productos', element: <ProductsPage /> },
           { path: 'usuarios', element: <UsersPage /> },
           { path: 'roles', element: <RolesPage /> },
