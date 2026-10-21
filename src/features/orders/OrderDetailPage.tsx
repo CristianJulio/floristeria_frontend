@@ -1,6 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CheckIcon, CopyIcon } from 'lucide-react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { useAuth } from '@/features/auth/auth-context'
 import { ChangeItemsDialog } from './ChangeItemsDialog'
@@ -11,11 +10,13 @@ import { LoadingState } from '@/components/LoadingState'
 import { ApiError } from '@/lib/api-client'
 import type { ContactType } from '@/lib/phone'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
+import { CopyButton } from './CopyButton'
 import { CrownLines } from './CrownLines'
 import { DeleteOrderButton } from './DeleteOrderButton'
 import { ProductImage } from '@/features/products/ProductImage'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
 import { OrderStatusActions } from './OrderStatusActions'
+import { OrderShareButtons } from './OrderShareButtons'
 import { OrderStatusBadge } from './OrderStatusBadge'
 import { fetchOrder, type Order } from './orders-api'
 
@@ -70,56 +71,6 @@ function DeliveryCard({ order }: { order: Order }) {
 }
 
 // Cards are printed, so the message is copied as is (line breaks included) to paste into the print file
-// The old way to copy: select the text in a hidden box and run the browser's copy command
-function copyWithTextBox(text: string) {
-  const box = document.createElement('textarea')
-  box.value = text
-  box.setAttribute('readonly', '')
-  box.style.position = 'fixed'
-  box.style.opacity = '0'
-  document.body.appendChild(box)
-  box.select()
-  try {
-    return document.execCommand('copy')
-  } catch {
-    return false
-  } finally {
-    document.body.removeChild(box)
-  }
-}
-
-function CopyMessageButton({ message }: { message: string }) {
-  const [result, setResult] = useState<'copied' | 'failed' | null>(null)
-
-  // The confirmation goes back to "Copiar" after a moment
-  useEffect(() => {
-    if (!result) return
-    const timer = setTimeout(() => setResult(null), 2000)
-    return () => clearTimeout(timer)
-  }, [result])
-
-  async function copy() {
-    try {
-      // navigator.clipboard only exists on secure pages (https or localhost); elsewhere the older
-      // way, through a hidden text box, still works
-      if (navigator.clipboard) await navigator.clipboard.writeText(message)
-      else if (!copyWithTextBox(message)) throw new Error('copy failed')
-      setResult('copied')
-    } catch {
-      setResult(copyWithTextBox(message) ? 'copied' : 'failed')
-    }
-  }
-
-  return (
-    <Button size="sm" variant="outline" onClick={copy}>
-      {result === 'copied' ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-      <span aria-live="polite">
-        {result === 'copied' ? 'Copiado' : result === 'failed' ? 'No se pudo copiar' : 'Copiar'}
-      </span>
-    </Button>
-  )
-}
-
 function CardMessageCard({ order }: { order: Order }) {
   return (
     <Card>
@@ -127,7 +78,7 @@ function CardMessageCard({ order }: { order: Order }) {
         <CardTitle>Tarjeta</CardTitle>
         {order.cardMessage && (
           <CardAction>
-            <CopyMessageButton message={order.cardMessage} />
+            <CopyButton text={order.cardMessage} label="Copiar" />
           </CardAction>
         )}
       </CardHeader>
@@ -290,6 +241,7 @@ export function OrderDetailPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <OrderShareButtons order={order} />
           <OrderStatusActions order={order} middle={editButton} />
           {can('orders.delete') && <DeleteOrderButton order={order} onDeleted={() => navigate(backTo, { replace: true })} />}
         </div>
