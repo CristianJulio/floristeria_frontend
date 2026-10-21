@@ -239,9 +239,11 @@ export function OrderDetailPage() {
             Entrega {formatDeliveryDay(order.deliveryDate)} ·{' '}
             <span className="font-medium text-foreground tabular-nums">{formatDeliveryTime(order)}</span>
           </p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <OrderShareButtons order={order} />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <OrderShareButtons order={order} />
           <OrderStatusActions order={order} middle={editButton} />
           {can('orders.delete') && <DeleteOrderButton order={order} onDeleted={() => navigate(backTo, { replace: true })} />}
         </div>
