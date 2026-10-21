@@ -92,7 +92,7 @@ export function AppLayout() {
                     {links(true)}
                   </nav>
                   <div className="mt-auto flex flex-col gap-3 border-t p-4">
-                    {can('commission.read') && <CommissionBadge className="sm:hidden" />}
+                    {can('commission.read') && <CommissionBadge className="flex sm:hidden" />}
                     {user && <UserBadge user={user} role={role} />}
                     <Button variant="outline" onClick={logout}>
                       <LogOutIcon aria-hidden />
@@ -110,7 +110,12 @@ export function AppLayout() {
 
             <div className="flex items-center gap-1 justify-self-end">
               {/* From tablets up it sits in the header; on phones it is in the side menu */}
-              {can('commission.read') && <CommissionBadge className="mr-1 hidden sm:flex" />}
+              {can('commission.read') && (
+                <>
+                  <CommissionBadge className="hidden sm:flex" />
+                  <span className="mx-2 hidden h-5 w-px bg-border sm:block" aria-hidden />
+                </>
+              )}
               {/* Below wide screens the upcoming deliveries open in a panel from the right */}
               {can('orders.read') && (
                 <Sheet open={deliveriesOpen} onOpenChange={setDeliveriesOpen}>

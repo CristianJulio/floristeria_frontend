@@ -15,12 +15,12 @@ export function CommissionBadge({ className }: { className?: string }) {
   if (isError) return null
 
   return (
-    <div
-      className={cn('flex flex-col rounded-lg border bg-card px-3 py-1 leading-tight', className)}
+    <p
+      className={cn('items-baseline gap-1.5 text-sm whitespace-nowrap', className)}
       title={data ? `${data.orderCount} pedidos × ${formatMoney(data.feePerOrder)}` : undefined}
     >
-      <span className="text-[11px] text-muted-foreground">Comisión del mes</span>
-      <span className="text-sm font-semibold tabular-nums">{data ? formatMoney(data.fee) : '…'}</span>
-    </div>
+      <span className="text-muted-foreground">Comisión del mes</span>
+      <span className="font-semibold tabular-nums">{data ? formatMoney(data.fee) : '…'}</span>
+    </p>
   )
 }
