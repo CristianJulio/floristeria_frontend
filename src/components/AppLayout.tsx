@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router'
 import { cn } from 'cn'
 import { ChevronDownIcon, ClockIcon, LogOutIcon, MenuIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CommissionBadge } from '@/features/dashboard/CommissionBadge'
 import { UpcomingOrdersSidebar } from '@/features/orders/UpcomingOrdersSidebar'
 import {
   DropdownMenu,
@@ -91,6 +92,7 @@ export function AppLayout() {
                     {links(true)}
                   </nav>
                   <div className="mt-auto flex flex-col gap-3 border-t p-4">
+                    {can('commission.read') && <CommissionBadge className="sm:hidden" />}
                     {user && <UserBadge user={user} role={role} />}
                     <Button variant="outline" onClick={logout}>
                       <LogOutIcon aria-hidden />
@@ -107,6 +109,8 @@ export function AppLayout() {
             </nav>
 
             <div className="flex items-center gap-1 justify-self-end">
+              {/* From tablets up it sits in the header; on phones it is in the side menu */}
+              {can('commission.read') && <CommissionBadge className="mr-1 hidden sm:flex" />}
               {/* Below wide screens the upcoming deliveries open in a panel from the right */}
               {can('orders.read') && (
                 <Sheet open={deliveriesOpen} onOpenChange={setDeliveriesOpen}>

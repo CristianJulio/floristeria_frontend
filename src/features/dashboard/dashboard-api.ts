@@ -19,6 +19,9 @@ export type Income = {
   fee: number
 }
 
+// The commission owed so far this month: the orders delivered in it, times the fee for each
+export type Commission = { from: string; to: string; orderCount: number; feePerOrder: number; fee: number }
+
 // Orders, of any delivery date, with money still to move: the customer owes the shop (kind PAYMENT) or the shop
 // owes the customer back (kind REFUND). `orders` is the first 50; the counts and sums cover all of them
 export type PendingPayments = {
@@ -104,6 +107,7 @@ const get = async <T>(path: string, from: string, to: string) =>
   (await apiFetch<{ data: T }>(`/api/dashboard/${path}`, { query: { from, to } })).data
 
 export const fetchIncome = (from: string, to: string) => get<Income>('income', from, to)
+export const fetchCommission = async () => (await apiFetch<{ data: Commission }>('/api/dashboard/commission')).data
 export const fetchPendingPayments = async () => (await apiFetch<{ data: PendingPayments }>('/api/dashboard/pending-payments')).data
 export const fetchCollectedByMethod = (from: string, to: string) => get<CollectedByMethod>('collected-by-method', from, to)
 export const fetchCollectedOrders = (from: string, to: string) => get<CollectedOrders>('collected-orders', from, to)

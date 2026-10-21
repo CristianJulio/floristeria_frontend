@@ -27,6 +27,10 @@ export const PERMISSION_GROUPS: { title: string; permissions: { name: string; la
     permissions: [{ name: 'payments.read', label: 'Ver pagos pendientes por cobrar o reembolsar' }],
   },
   {
+    title: 'Comisión',
+    permissions: [{ name: 'commission.read', label: 'Ver la comisión acumulada del mes' }],
+  },
+  {
     title: 'Productos',
     permissions: [
       { name: 'products.read', label: 'Ver productos' },
