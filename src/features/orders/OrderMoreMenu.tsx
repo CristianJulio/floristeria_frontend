@@ -33,13 +33,13 @@ export function OrderMoreMenu({ order, onDeleted }: { order: Order; onDeleted: (
           <EllipsisVerticalIcon aria-hidden />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-44">
-          <DropdownMenuItem onClick={() => copy(orderAsText(order), 'Pedido copiado')}>
-            <CopyIcon aria-hidden />
-            Copiar pedido
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => copy(orderLink(order), 'Enlace copiado')}>
             <LinkIcon aria-hidden />
             Copiar enlace
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => copy(orderAsText(order), 'Pedido copiado')}>
+            <CopyIcon aria-hidden />
+            Copiar pedido
           </DropdownMenuItem>
           {can('orders.delete') && (
             <>
