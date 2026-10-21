@@ -19,16 +19,12 @@ export const PERMISSION_GROUPS: { title: string; permissions: { name: string; la
     ],
   },
   {
-    title: 'Resumen',
-    permissions: [{ name: 'dashboard.read', label: 'Ver el resumen (ventas, cobros y sus detalles)' }],
-  },
-  {
-    title: 'Pagos',
-    permissions: [{ name: 'payments.read', label: 'Ver pagos pendientes por cobrar o reembolsar' }],
-  },
-  {
-    title: 'Comisión',
-    permissions: [{ name: 'commission.read', label: 'Ver la comisión acumulada del mes' }],
+    title: 'Resumen y pagos',
+    permissions: [
+      { name: 'dashboard.read', label: 'Ver el resumen (ventas, cobros y sus detalles)' },
+      { name: 'payments.read', label: 'Ver pagos pendientes por cobrar o reembolsar' },
+      { name: 'commission.read', label: 'Ver la comisión acumulada del mes' },
+    ],
   },
   {
     title: 'Productos',

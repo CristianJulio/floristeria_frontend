@@ -44,8 +44,9 @@ export function PermissionsChecklist({ permissions, selectedIds, onChange, disab
   }
 
   return (
-    // Each group is a small panel; two columns on computers so the page stays short
-    <div className="grid gap-3 md:grid-cols-2 md:items-start">
+    // Each group is a small panel; two columns on computers so the page stays short. The panels stack
+    // in the columns (not in rows), so a tall one doesn't leave a gap beside a short one
+    <div className="gap-3 md:columns-2">
       {groups
         .filter((group) => group.items.length > 0)
         .map((group) => {
@@ -53,7 +54,11 @@ export function PermissionsChecklist({ permissions, selectedIds, onChange, disab
           const selectedCount = ids.filter((id) => selectedIds.has(id)).length
           const allSelected = selectedCount === ids.length
           return (
-            <fieldset key={group.title} className="flex flex-col gap-1 rounded-lg border p-3" disabled={disabled}>
+            <fieldset
+              key={group.title}
+              className="mb-3 flex break-inside-avoid flex-col gap-1 rounded-lg border p-3"
+              disabled={disabled}
+            >
               <legend className="sr-only">{group.title}</legend>
               <div className="flex items-center justify-between gap-2 pb-1">
                 <span className="flex items-baseline gap-2">
