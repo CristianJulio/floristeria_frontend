@@ -60,6 +60,7 @@ export const PERMISSION_GROUPS: { title: string; permissions: { name: string; la
     permissions: [
       { name: 'permissions.read', label: 'Ver permisos' },
       { name: 'permissions.create', label: 'Crear permisos' },
+      { name: 'permissions.view_hidden', label: 'Ver los permisos ocultos y elegir cuáles se ocultan' },
     ],
   },
 ]

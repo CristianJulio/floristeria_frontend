@@ -18,6 +18,8 @@ export type Permission = {
   id: string
   name: string
   description: string | null
+  // Hidden permissions only reach those who may see them (permissions.view_hidden)
+  hidden: boolean
 }
 
 export async function fetchRoles() {
@@ -32,6 +34,14 @@ export async function fetchRole(id: string) {
 
 export async function fetchPermissions() {
   const body = await apiFetch<{ data: Permission[] }>('/api/permissions')
+  return body.data
+}
+
+export async function setPermissionHidden(id: string, hidden: boolean) {
+  const body = await apiFetch<{ data: Permission }>(`/api/permissions/${id}/hidden`, {
+    method: 'PATCH',
+    body: { hidden },
+  })
   return body.data
 }
 

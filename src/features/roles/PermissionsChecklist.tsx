@@ -1,6 +1,11 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { apiErrorMessage } from '@/lib/api-errors'
+import { useAuth } from '@/features/auth/auth-context'
 import { PERMISSION_GROUPS } from './permission-labels'
-import type { Permission } from './roles-api'
+import { setPermissionHidden, type Permission } from './roles-api'
 
 type Props = {
   permissions: Permission[]
@@ -11,6 +16,15 @@ type Props = {
 
 // The role's permissions as grouped checkboxes with Spanish names
 export function PermissionsChecklist({ permissions, selectedIds, onChange, disabled = false }: Props) {
+  const { can } = useAuth()
+  const queryClient = useQueryClient()
+  // Who may see the hidden permissions may also choose which ones are hidden
+  const canHide = can('permissions.view_hidden')
+  const hiding = useMutation({
+    mutationFn: ({ id, hidden }: { id: string; hidden: boolean }) => setPermissionHidden(id, hidden),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['permissions'] }),
+    onError: (error) => toast.error(apiErrorMessage(error)),
+  })
   const byName = new Map(permissions.map((permission) => [permission.name, permission]))
   const labelled = new Set(PERMISSION_GROUPS.flatMap((group) => group.permissions.map((p) => p.name)))
 
@@ -18,13 +32,21 @@ export function PermissionsChecklist({ permissions, selectedIds, onChange, disab
     title: group.title,
     items: group.permissions.flatMap((p) => {
       const permission = byName.get(p.name)
-      return permission ? [{ id: permission.id, label: p.label }] : []
+      return permission ? [{ id: permission.id, label: p.label, name: permission.name, hidden: permission.hidden }] : []
     }),
   }))
   // Permissions without a Spanish name (e.g. created through the API) keep their technical name
   const others = permissions.filter((permission) => !labelled.has(permission.name))
   if (others.length > 0) {
-    groups.push({ title: 'Otros', items: others.map((permission) => ({ id: permission.id, label: permission.name })) })
+    groups.push({
+      title: 'Otros',
+      items: others.map((permission) => ({
+        id: permission.id,
+        label: permission.name,
+        name: permission.name,
+        hidden: permission.hidden,
+      })),
+    })
   }
 
   function toggle(id: string) {
@@ -77,18 +99,35 @@ export function PermissionsChecklist({ permissions, selectedIds, onChange, disab
                 )}
               </div>
               {group.items.map((item) => (
-                <label
-                  key={item.id}
-                  className="-mx-1.5 flex items-start gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-muted has-disabled:opacity-70 has-disabled:hover:bg-transparent"
-                >
-                  <input
-                    type="checkbox"
-                    className="mt-0.5 size-4 shrink-0 accent-primary"
-                    checked={selectedIds.has(item.id)}
-                    onChange={() => toggle(item.id)}
-                  />
-                  {item.label}
-                </label>
+                <div key={item.id} className="-mx-1.5 flex items-start gap-1 rounded-md hover:bg-muted">
+                  <label className="flex flex-1 items-start gap-2 px-1.5 py-1 text-sm has-disabled:opacity-70">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 size-4 shrink-0 accent-primary"
+                      checked={selectedIds.has(item.id)}
+                      onChange={() => toggle(item.id)}
+                    />
+                    <span>
+                      {item.label}
+                      {item.hidden && <span className="ml-1.5 text-xs text-muted-foreground">(oculto)</span>}
+                    </span>
+                  </label>
+                  {/* The eye hides the permission from everyone without permissions.view_hidden */}
+                  {canHide && item.name !== 'permissions.view_hidden' && (
+                    <Button
+                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
+                      className="shrink-0"
+                      disabled={hiding.isPending}
+                      aria-label={item.hidden ? `Mostrar ${item.label}` : `Ocultar ${item.label}`}
+                      title={item.hidden ? 'Mostrar a todos' : 'Ocultar a quien no vea permisos ocultos'}
+                      onClick={() => hiding.mutate({ id: item.id, hidden: !item.hidden })}
+                    >
+                      {item.hidden ? <EyeOffIcon aria-hidden /> : <EyeIcon aria-hidden />}
+                    </Button>
+                  )}
+                </div>
               ))}
             </fieldset>
           )
