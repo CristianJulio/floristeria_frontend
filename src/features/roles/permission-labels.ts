@@ -15,7 +15,16 @@ export const PERMISSION_GROUPS: { title: string; permissions: { name: string; la
       { name: 'orders.record_refund', label: 'Registrar reembolsos y montos retenidos' },
       { name: 'orders.void_payment', label: 'Anular pagos' },
       { name: 'orders.delete', label: 'Eliminar pedidos' },
+      { name: 'orders.search_by_id', label: 'Buscar un pedido por su id' },
     ],
+  },
+  {
+    title: 'Resumen',
+    permissions: [{ name: 'dashboard.read', label: 'Ver el resumen (ventas, cobros y sus detalles)' }],
+  },
+  {
+    title: 'Pagos',
+    permissions: [{ name: 'payments.read', label: 'Ver pagos pendientes por cobrar o reembolsar' }],
   },
   {
     title: 'Productos',
