@@ -1,4 +1,5 @@
-import { useSearchParams } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
+import { useAuth } from '@/features/auth/auth-context'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,8 +58,11 @@ function shiftDay(period: Exclude<Period, 'rango'>, day: string, direction: 1 | 
 // of dates chosen here. The arrows move to the previous or next one; "Hoy" comes back to the current.
 // The choice lives in the address (?periodo=…&dia=…), so coming back from an order finds the same view
 export function DashboardPage() {
+  const { can } = useAuth()
   const today = todayInColombia()
   const [params, setParams] = useSearchParams()
+
+  if (!can('dashboard.read')) return <Navigate to="/" replace />
   const update = (changes: Record<string, string>) =>
     setParams(
       (current) => {

@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import { Navigate } from 'react-router'
 import { cn } from 'cn'
 import { formatMoney } from '@/lib/money'
+import { useAuth } from '@/features/auth/auth-context'
 import { PendingPaymentsCard } from './PendingPaymentsCard'
 import { fetchPendingPayments } from './dashboard-api'
 
@@ -19,11 +21,15 @@ const orders = (count: number) => `${count} ${count === 1 ? 'pedido' : 'pedidos'
 // What customers still owe the shop and what the shop still owes them, whatever the delivery date,
 // with the orders behind it. The totals and the list share one request with the card
 export function PendingPaymentsPage() {
+  const { can } = useAuth()
   const { data, isError } = useQuery({
     queryKey: ['dashboard', 'pending-payments'],
     queryFn: fetchPendingPayments,
     refetchInterval: 60_000,
+    enabled: can('payments.read'),
   })
+
+  if (!can('payments.read')) return <Navigate to="/" replace />
 
   return (
     <section className="flex flex-col gap-4">

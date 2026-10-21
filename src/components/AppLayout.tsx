@@ -21,8 +21,8 @@ import { useAuth } from '@/features/auth/auth-context'
 const SECTIONS = [
   // The orders list lives at '/', but its pages (new, detail, edit) are under /pedidos
   { to: '/', label: 'Pedidos', permission: 'orders.read', end: true, alsoActiveUnder: '/pedidos' },
-  { to: '/resumen', label: 'Resumen', permission: 'orders.read', end: false },
-  { to: '/pagos', label: 'Pagos', permission: 'orders.read', end: false },
+  { to: '/resumen', label: 'Resumen', permission: 'dashboard.read', end: false },
+  { to: '/pagos', label: 'Pagos', permission: 'payments.read', end: false },
   { to: '/buscar', label: 'Buscar pedido', permission: 'orders.search_by_id', end: false },
   { to: '/productos', label: 'Productos', permission: 'products.read', end: false },
   { to: '/usuarios', label: 'Usuarios', permission: 'users.read', end: false },
