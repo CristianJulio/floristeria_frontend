@@ -220,7 +220,7 @@ export function RolePage() {
 
   const isProtected = role?.isProtected ?? false
   const canEditData = isNew ? can('roles.create') : can('roles.update') && !isProtected
-  const canEditPermissions = isNew ? can('roles.create') : can('roles.update_permissions') && !isProtected
+  const canEditPermissions = isNew ? can('roles.create') : can('roles.update_permissions')
 
   const back = (
     <Button variant="ghost" size="sm" className="self-start" onClick={() => navigate('/roles')}>
@@ -251,8 +251,8 @@ export function RolePage() {
       <h1 className="text-xl font-semibold">{isNew ? 'Nuevo rol' : role?.name}</h1>
       {isProtected && (
         <p className="text-sm text-muted-foreground">
-          Este rol es fijo: tiene todos los permisos y no se puede modificar ni eliminar. Siempre debe quedar al menos
-          un usuario con este rol.
+          Este rol es fijo: no se puede renombrar ni eliminar, y siempre debe quedar al menos un usuario con este rol.
+          Sus permisos sí se pueden cambiar.
         </p>
       )}
 
