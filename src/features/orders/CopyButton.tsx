@@ -20,6 +20,18 @@ function copyWithTextBox(text: string) {
   }
 }
 
+// Whether the text was copied. navigator.clipboard only exists on secure pages (https or localhost);
+// elsewhere the older way, through a hidden text box, still works
+export async function copyText(text: string) {
+  try {
+    if (navigator.clipboard) await navigator.clipboard.writeText(text)
+    else if (!copyWithTextBox(text)) throw new Error('copy failed')
+    return true
+  } catch {
+    return copyWithTextBox(text)
+  }
+}
+
 // A button that copies `text` and says so for a moment
 export function CopyButton({ text, label, icon }: { text: string; label: string; icon?: ReactNode }) {
   const [result, setResult] = useState<'copied' | 'failed' | null>(null)
@@ -32,15 +44,7 @@ export function CopyButton({ text, label, icon }: { text: string; label: string;
   }, [result])
 
   async function copy() {
-    try {
-      // navigator.clipboard only exists on secure pages (https or localhost); elsewhere the older
-      // way, through a hidden text box, still works
-      if (navigator.clipboard) await navigator.clipboard.writeText(text)
-      else if (!copyWithTextBox(text)) throw new Error('copy failed')
-      setResult('copied')
-    } catch {
-      setResult(copyWithTextBox(text) ? 'copied' : 'failed')
-    }
+    setResult((await copyText(text)) ? 'copied' : 'failed')
   }
 
   return (

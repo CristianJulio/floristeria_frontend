@@ -12,11 +12,10 @@ import type { ContactType } from '@/lib/phone'
 import { formatDateTime, formatDeliveryDay, formatDeliveryTime, formatMoney } from './order-format'
 import { CopyButton } from './CopyButton'
 import { CrownLines } from './CrownLines'
-import { DeleteOrderButton } from './DeleteOrderButton'
 import { ProductImage } from '@/features/products/ProductImage'
 import { OrderPaymentsCard } from './OrderPaymentsCard'
 import { OrderStatusActions } from './OrderStatusActions'
-import { OrderShareButtons } from './OrderShareButtons'
+import { OrderMoreMenu } from './OrderMoreMenu'
 import { OrderStatusBadge } from './OrderStatusBadge'
 import { fetchOrder, type Order } from './orders-api'
 
@@ -239,13 +238,10 @@ export function OrderDetailPage() {
             Entrega {formatDeliveryDay(order.deliveryDate)} ·{' '}
             <span className="font-medium text-foreground tabular-nums">{formatDeliveryTime(order)}</span>
           </p>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <OrderShareButtons order={order} />
-          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <OrderStatusActions order={order} middle={editButton} />
-          {can('orders.delete') && <DeleteOrderButton order={order} onDeleted={() => navigate(backTo, { replace: true })} />}
+          <OrderMoreMenu order={order} onDeleted={() => navigate(backTo, { replace: true })} />
         </div>
       </header>
 
